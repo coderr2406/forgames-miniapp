@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>ForGames.Uz</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════
+   ПЕРЕМЕННЫЕ И СБРОС
+═══════════════════════════════ */
+:root {
+  --bg:        #090b10;
+  --bg2:       #0f1219;
+  --bg3:       #161b25;
+  --bg4:       #1c2230;
+  --bg5:       #212840;
+  --accent:    #00e676;
+  --accent2:   #00c853;
+  --adr:       rgba(0,230,118,.12);
+  --adb:       rgba(0,230,118,.28);
+  --text:      #dde1ec;
+  --text2:     #7b8296;
+  --text3:     #464f63;
+  --danger:    #ff5252;
+  --warn:      #ffb300;
+  --blue:      #40c4ff;
+  --gold:      #ffd740;
+  --silver:    #b0bec5;
+  --bronze:    #ff8a65;
+  --border:    rgba(255,255,255,.06);
+  --r:         10px;
+  --r2:        14px;
+  --r3:        18px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
+button{border:none;cursor:pointer;font-family:inherit}
+a{color:inherit;text-decoration:none}
+
+/* ═══════════════════════════════
+   СКРОЛЛБАР
+═══════════════════════════════ */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+
+/* ═══════════════════════════════
+   ОСНОВНАЯ СТРУКТУРА
+═══════════════════════════════ */
+#app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;position:relative}
+
+/* ═══════════════════════════════
+   HEADER
+═══════════════════════════════ */
+.header{
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  padding:12px 16px 10px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+  position:relative;z-index:10;
+}
+.logo{
+  font-family:'Rajdhani',sans-serif;
+  font-weight:700;font-size:21px;letter-spacing:.5px;
+  color:var(--accent);
+}
+.logo em{color:var(--text);font-style:normal}
+.header-right{display:flex;align-items:center;gap:8px}
+.online-pill{
+  display:flex;align-items:center;gap:5px;
+  background:var(--adr);border:1px solid var(--adb);
+  border-radius:20px;padding:3px 10px;
+  font-size:11px;color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:500;
+}
+.online-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.notif-btn{
+  width:34px;height:34px;border-radius:9px;
+  background:var(--bg3);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;cursor:pointer;
+}
+.notif-badge{
+  position:absolute;top:6px;right:6px;
+  width:8px;height:8px;background:var(--danger);border-radius:50%;
+  border:1.5px solid var(--bg2);
+}
+
+/* ═══════════════════════════════
+   КОНТЕНТ
+═══════════════════════════════ */
+.content{flex:1;overflow-y:auto;overflow-x:hidden}
+.page{display:none;padding:14px 14px 80px;animation:fadeIn .18s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ═══════════════════════════════
+   НАВИГАЦИЯ
+═══════════════════════════════ */
+.nav{
+  position:absolute;bottom:0;left:0;right:0;
+  background:var(--bg2);border-top:1px solid var(--border);
+  display:flex;padding:6px 0;padding-bottom:calc(6px + env(safe-area-inset-bottom));
+  z-index:10;
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:5px 0;cursor:pointer;border-radius:8px;transition:background .15s;
+}
+.nav-icon{font-size:20px;line-height:1;filter:grayscale(1);opacity:.45;transition:all .15s}
+.nav-lbl{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);transition:color .15s}
+.nav-item.active .nav-icon{filter:none;opacity:1}
+.nav-item.active .nav-lbl{color:var(--accent)}
+
+/* ═══════════════════════════════
+   SECTION LABELS
+═══════════════════════════════ */
+.section-lbl{
+  font-size:10px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;
+  color:var(--text3);margin:16px 0 8px;
+}
+.section-lbl:first-child{margin-top:0}
+
+/* ═══════════════════════════════
+   СЕРВЕРЫ
+═══════════════════════════════ */
+.server-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);
+  padding:12px 14px;margin-bottom:8px;
+  display:flex;align-items:center;gap:12px;
+  cursor:pointer;transition:border-color .15s,background .15s;
+}
+.server-card:hover{border-color:var(--adb);background:var(--bg3)}
+.srv-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;transition:all .3s}
+.srv-dot.green{background:var(--accent);box-shadow:0 0 0 4px rgba(0,230,118,.15)}
+.srv-dot.yellow{background:var(--warn);box-shadow:0 0 0 4px rgba(255,179,0,.15)}
+.srv-dot.red{background:var(--text3);box-shadow:none}
+.srv-info{flex:1;min-width:0}
+.srv-name{
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.srv-meta{display:flex;align-items:center;gap:8px;margin-top:3px}
+.srv-map{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue)}
+.srv-ip{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)}
+.srv-right{flex-shrink:0;text-align:right}
+.srv-count{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:19px;line-height:1}
+.srv-max{font-size:13px;color:var(--text3);font-weight:400}
+.srv-bar{width:48px;height:3px;background:var(--bg4);border-radius:2px;margin-top:5px;overflow:hidden}
+.srv-fill{height:100%;border-radius:2px;background:var(--accent);transition:width .5s}
+
+/* ═══════════════════════════════
+   СКЕЛЕТОН (загрузка)
+═══════════════════════════════ */
+.skeleton{
+  background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.4s infinite;
+  border-radius:6px;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-card{height:70px;border-radius:var(--r2);margin-bottom:8px}
+
+/* ═══════════════════════════════
+   КНОПКИ
+═══════════════════════════════ */
+.btn-primary{
+  display:block;width:100%;
+  background:var(--accent);color:var(--bg);
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;letter-spacing:.4px;
+  border-radius:var(--r2);padding:13px;margin-top:8px;
+  transition:background .15s,transform .1s;
+}
+.btn-primary:active{transform:scale(.98);background:var(--accent2)}
+.btn-outline{
+  display:block;width:100%;
+  background:transparent;color:var(--accent);
+  border:1px solid var(--adb);
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;
+  border-radius:var(--r2);padding:11px;margin-top:8px;
+  transition:background .15s;
+}
+.btn-outline:active{background:var(--adr)}
+
+/* ═══════════════════════════════
+   ТОП
+═══════════════════════════════ */
+.filter-row{display:flex;gap:6px;margin-bottom:12px}
+.filter-btn{
+  flex:1;padding:7px 6px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:9px;
+  font-size:12px;font-weight:500;color:var(--text2);
+  transition:all .15s;
+}
+.filter-btn.active{
+  background:var(--adr);border-color:var(--adb);
+  color:var(--accent);font-weight:600;
+}
+.top-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);
+  padding:10px 14px;margin-bottom:6px;
+  display:flex;align-items:center;gap:12px;
+}
+.top-rank{font-family:'JetBrains Mono',monospace;font-size:13px;width:26px;text-align:center;flex-shrink:0}
+.r1{color:var(--gold)}.r2{color:var(--silver)}.r3{color:var(--bronze)}.rn{color:var(--text3)}
+.top-ava{
+  width:38px;height:38px;border-radius:10px;
+  background:var(--bg4);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;color:var(--text2);
+  flex-shrink:0;
+}
+.top-ava.gold{border-color:rgba(255,215,64,.5);color:var(--gold)}
+.top-info{flex:1;min-width:0}
+.top-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.top-val{text-align:right;flex-shrink:0}
+.top-num{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:19px;color:var(--accent);line-height:1}
+.top-lbl{font-size:10px;color:var(--text3);margin-top:1px}
+
+/* ═══════════════════════════════
+   ПРОФИЛЬ
+═══════════════════════════════ */
+.profile-hero{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);
+  padding:18px;margin-bottom:12px;
+}
+.p-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.p-ava{
+  width:58px;height:58px;border-radius:14px;
+  border:2px solid var(--adb);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;color:var(--accent);
+  flex-shrink:0;
+}
+.p-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px}
+.p-steam{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);margin-top:3px}
+.rank-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;
+  margin-top:6px;
+}
+.rank-pill.silver{background:rgba(176,190,197,.12);border:1px solid rgba(176,190,197,.3);color:var(--silver)}
+.rank-pill.gold{background:rgba(255,215,64,.12);border:1px solid rgba(255,215,64,.3);color:var(--gold)}
+.rank-pill.green{background:var(--adr);border:1px solid var(--adb);color:var(--accent)}
+
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-box{
+  background:var(--bg3);border-radius:10px;padding:10px 12px;
+}
+.sbl{font-size:10px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase}
+.sbv{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;margin-top:2px}
+.sbv.g{color:var(--accent)}.sbv.b{color:var(--blue)}.sbv.y{color:var(--gold)}
+
+/* ═══════════════════════════════
+   БАЛАНС
+═══════════════════════════════ */
+.balance-card{
+  background:var(--bg3);border:1px solid var(--adb);border-radius:var(--r2);
+  padding:16px;margin-bottom:12px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.bal-lbl{font-size:10px;color:var(--text3);letter-spacing:1.2px;text-transform:uppercase}
+.bal-val{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:28px;color:var(--accent);line-height:1.1}
+.bal-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.topup-btn{
+  background:var(--adr);border:1px solid var(--adb);border-radius:10px;
+  padding:9px 14px;color:var(--accent);
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;
+  white-space:nowrap;
+}
+.bonus-card{
+  background:linear-gradient(135deg,#0f2218,#0a1a10);
+  border:1px solid rgba(0,230,118,.2);border-radius:var(--r2);
+  padding:14px;margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.bonus-info{}
+.bonus-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px}
+.bonus-desc{font-size:12px;color:var(--text3);margin-top:2px}
+.bonus-amount{
+  background:var(--adr);border:1px solid var(--adb);border-radius:8px;
+  padding:4px 10px;font-family:'JetBrains Mono',monospace;
+  font-size:13px;color:var(--accent);font-weight:700;white-space:nowrap;
+}
+.bonus-claimed{color:var(--text3);font-size:12px}
+
+/* ═══════════════════════════════
+   МАГАЗИН
+═══════════════════════════════ */
+.shop-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);
+  padding:14px;margin-bottom:10px;
+  transition:border-color .15s;
+}
+.shop-card.vip{border-color:rgba(255,215,64,.18)}
+.shop-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.shop-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:18px}
+.shop-name.vip{color:var(--gold)}.shop-name.premium{color:var(--accent)}
+.shop-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.shop-price{text-align:right}
+.price-val{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;color:var(--accent)}
+.price-lbl{font-size:10px;color:var(--text3)}
+.perks{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.perk{
+  background:var(--bg4);border-radius:6px;
+  padding:3px 9px;font-size:11px;color:var(--text2);
+}
+
+/* ═══════════════════════════════
+   ПРИВИЛЕГИИ В ПРОФИЛЕ
+═══════════════════════════════ */
+.priv-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);
+  padding:12px 14px;margin-bottom:8px;
+  display:flex;align-items:center;gap:12px;
+}
+.priv-icon{font-size:22px;flex-shrink:0}
+.priv-info{flex:1}
+.priv-name{font-weight:600;font-size:14px}
+.priv-srv{font-size:11px;color:var(--text3);margin-top:1px}
+.priv-exp{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--warn);text-align:right;flex-shrink:0}
+
+/* ═══════════════════════════════
+   STEAM LINK FORM
+═══════════════════════════════ */
+.steam-form{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin-bottom:10px}
+.steam-form label{font-size:12px;color:var(--text3);display:block;margin-bottom:6px}
+.steam-input{
+  width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:9px;
+  padding:10px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;
+  outline:none;transition:border-color .15s;
+}
+.steam-input:focus{border-color:var(--adb)}
+.steam-input::placeholder{color:var(--text3)}
+
+/* ═══════════════════════════════
+   УВЕДОМЛЕНИЯ
+═══════════════════════════════ */
+.empty-state{text-align:center;padding:40px 20px}
+.empty-icon{font-size:40px;margin-bottom:12px;opacity:.4}
+.empty-text{color:var(--text3);font-size:14px}
+
+/* ═══════════════════════════════
+   TOAST
+═══════════════════════════════ */
+.toast{
+  position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-10px);
+  background:var(--bg4);border:1px solid var(--border);border-radius:12px;
+  padding:10px 18px;font-size:14px;font-weight:500;
+  opacity:0;transition:all .25s;z-index:999;white-space:nowrap;
+  pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:var(--adb);color:var(--accent)}
+.toast.error{border-color:rgba(255,82,82,.3);color:var(--danger)}
+
+/* ═══════════════════════════════
+   SPINNER
+═══════════════════════════════ */
+.spinner{
+  width:20px;height:20px;border:2px solid var(--bg4);border-top-color:var(--accent);
+  border-radius:50%;animation:spin .7s linear infinite;display:inline-block;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">FOR<em>GAMES</em>.UZ</div>
+    <div class="header-right">
+      <div class="online-pill"><div class="online-dot"></div><span id="online-count">—</span></div>
+      <div class="notif-btn" onclick="showPage('notif')">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1a5 5 0 0 0-5 5v3L1.5 11h13L13 9V6a5 5 0 0 0-5-5zM6.5 14a1.5 1.5 0 0 0 3 0" fill="#7b8296"/></svg>
+        <div class="notif-badge" id="notif-badge" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGES -->
+  <div class="content">
+
+    <!-- СЕРВЕРЫ -->
+    <div class="page active" id="page-servers">
+      <div class="section-lbl">ClanWar Серверы</div>
+      <div id="servers-list">
+        <div class="skeleton skeleton-card"></div>
+        <div class="skeleton skeleton-card"></div>
+        <div class="skeleton skeleton-card"></div>
+      </div>
+    </div>
+
+    <!-- ТОП -->
+    <div class="page" id="page-top">
+      <div class="filter-row">
+        <button class="filter-btn active" data-sort="kills" onclick="setSort(this)">Kills</button>
+        <button class="filter-btn" data-sort="kd" onclick="setSort(this)">K/D</button>
+        <button class="filter-btn" data-sort="wins" onclick="setSort(this)">Wins</button>
+        <button class="filter-btn" data-sort="headshots" onclick="setSort(this)">HS%</button>
+      </div>
+      <div id="top-list">
+        <div class="skeleton skeleton-card"></div>
+        <div class="skeleton skeleton-card"></div>
+        <div class="skeleton skeleton-card"></div>
+      </div>
+    </div>
+
+    <!-- МАГАЗИН -->
+    <div class="page" id="page-shop">
+      <div class="balance-card">
+        <div>
+          <div class="bal-lbl">Баланс</div>
+          <div class="bal-val" id="shop-balance">— UZS</div>
+          <div class="bal-sub">Пополнение через скриншот</div>
+        </div>
+        <button class="topup-btn" onclick="showTopup()">+ Пополнить</button>
+      </div>
+
+      <div id="shop-bonus-block"></div>
+
+      <div class="section-lbl">Привилегии</div>
+      <div id="shop-items">
+        <div class="skeleton skeleton-card"></div>
+        <div class="skeleton skeleton-card"></div>
+      </div>
+    </div>
+
+    <!-- ПРОФИЛЬ -->
+    <div class="page" id="page-profile">
+      <div id="profile-content">
+        <div class="skeleton" style="height:200px;border-radius:18px;margin-bottom:12px"></div>
+        <div class="skeleton skeleton-card"></div>
+      </div>
+    </div>
+
+    <!-- УВЕДОМЛЕНИЯ (скрытая страница) -->
+    <div class="page" id="page-notif">
+      <div class="empty-state">
+        <div class="empty-icon">🔔</div>
+        <div class="empty-text">Уведомлений пока нет</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- НАВИГАЦИЯ -->
+  <div class="nav">
+    <div class="nav-item active" onclick="showPage('servers')">
+      <div class="nav-icon">🖥️</div>
+      <div class="nav-lbl">Серверы</div>
+    </div>
+    <div class="nav-item" onclick="showPage('top')">
+      <div class="nav-icon">🏆</div>
+      <div class="nav-lbl">Топ</div>
+    </div>
+    <div class="nav-item" onclick="showPage('shop')">
+      <div class="nav-icon">🛒</div>
+      <div class="nav-lbl">Магазин</div>
+    </div>
+    <div class="nav-item" onclick="showPage('profile')">
+      <div class="nav-icon">👤</div>
+      <div class="nav-lbl">Профиль</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  КОНФИГ — поменяй на свой реальный URL после деплоя
+// ═══════════════════════════════════════════════════
+const API = 'http://localhost:3000'; // ← ВСТАВЬ СВОЙ URL
+const tg  = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+
+let token    = localStorage.getItem('fg_token') || null;
+let userData = null;
+let currentSort = 'kills';
+
+// ═══════════════════════════════════════════════════
+//  УТИЛИТЫ
+// ═══════════════════════════════════════════════════
+function toast(msg, type = 'success', dur = 2500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + type + ' show';
+  setTimeout(() => el.classList.remove('show'), dur);
+}
+
+async function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(API + path, { headers, ...opts });
+  return res.json();
+}
+
+function fmtNum(n) {
+  return Number(n || 0).toLocaleString('ru-RU');
+}
+
+function initials(name) {
+  return (name || '??').slice(0, 2).toUpperCase();
+}
+
+// ═══════════════════════════════════════════════════
+//  НАВИГАЦИЯ
+// ═══════════════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name)?.classList.add('active');
+  const pages = ['servers','top','shop','profile'];
+  const idx   = pages.indexOf(name);
+  if (idx >= 0) document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
+
+  if (name === 'servers') loadServers();
+  if (name === 'top')     loadTop(currentSort);
+  if (name === 'shop')    loadShop();
+  if (name === 'profile') loadProfile();
+}
+
+// ═══════════════════════════════════════════════════
+//  АВТОРИЗАЦИЯ
+// ═══════════════════════════════════════════════════
+async function auth() {
+  let tgUser = tg?.initDataUnsafe?.user;
+  // Для тестирования в браузере без Telegram
+  if (!tgUser) tgUser = { id: 999999, username: 'test', first_name: 'Тест' };
+
+  try {
+    const data = await api('/api/profile/auth', {
+      method: 'POST',
+      body: JSON.stringify({
+        telegram_id: tgUser.id,
+        username: tgUser.username,
+        first_name: tgUser.first_name
+      })
+    });
+    if (data.success) {
+      token = data.token;
+      userData = data.user;
+      localStorage.setItem('fg_token', token);
+    }
+  } catch (e) {
+    console.error('Auth error:', e);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  СЕРВЕРЫ
+// ═══════════════════════════════════════════════════
+async function loadServers() {
+  try {
+    const data = await api('/api/servers');
+    const list = document.getElementById('servers-list');
+
+    if (!data.success || !data.data.length) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">🖥️</div><div class="empty-text">Серверы недоступны</div></div>';
+      return;
+    }
+
+    let total = 0;
+    list.innerHTML = data.data.map(s => {
+      total += s.players;
+      const pct  = s.maxPlayers > 0 ? (s.players / s.maxPlayers * 100) : 0;
+      const cls  = !s.online ? 'red' : pct >= 80 ? 'yellow' : 'green';
+      const clr  = cls === 'green' ? 'var(--accent)' : cls === 'yellow' ? 'var(--warn)' : 'var(--text3)';
+      const fclr = cls === 'yellow' ? 'var(--warn)' : 'var(--accent)';
+      return `<div class="server-card" onclick="copyIp('${s.connect}')">
+        <div class="srv-dot ${cls}"></div>
+        <div class="srv-info">
+          <div class="srv-name">${s.label}</div>
+          <div class="srv-meta">
+            <span class="srv-map">${s.map}</span>
+            <span class="srv-ip">${s.connect}</span>
+          </div>
+        </div>
+        <div class="srv-right">
+          <div class="srv-count" style="color:${clr}">${s.players}<span class="srv-max">/${s.maxPlayers}</span></div>
+          <div class="srv-bar"><div class="srv-fill" style="width:${pct}%;background:${fclr}"></div></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('online-count').textContent = total + ' online';
+  } catch (e) {
+    document.getElementById('servers-list').innerHTML = '<div class="empty-state"><div class="empty-text">Ошибка загрузки серверов</div></div>';
+  }
+}
+
+function copyIp(ip) {
+  navigator.clipboard?.writeText(ip).then(() => toast('IP скопирован: ' + ip)).catch(() => toast('IP: ' + ip));
+  if (tg) tg.HapticFeedback?.impactOccurred('light');
+}
+
+// ═══════════════════════════════════════════════════
+//  ТОП ИГРОКОВ
+// ═══════════════════════════════════════════════════
+async function loadTop(sort) {
+  currentSort = sort;
+  const list = document.getElementById('top-list');
+  list.innerHTML = '<div class="skeleton skeleton-card"></div>'.repeat(5);
+
+  try {
+    const data = await api('/api/players/top?sort=' + sort + '&limit=50');
+    if (!data.success || !data.data.length) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">Нет данных о игроках</div></div>';
+      return;
+    }
+
+    const medals = ['r1','r2','r3'];
+    const nums   = ['#1','#2','#3'];
+
+    list.innerHTML = data.data.map((p, i) => {
+      const rk   = i < 3 ? medals[i] : 'rn';
+      const num  = i < 3 ? nums[i] : `#${i+1}`;
+      const ava  = initials(p.name);
+      let   val, lbl;
+      if (sort === 'kd')        { val = Number(p.kd).toFixed(2);          lbl = 'K/D'; }
+      else if (sort === 'hs')   { val = Number(p.hs_pct || 0).toFixed(1)+'%'; lbl = 'HS'; }
+      else if (sort === 'headshots') { val = fmtNum(p.headshots); lbl = 'HS'; }
+      else                      { val = fmtNum(p[sort] || p.kills);      lbl = sort; }
+
+      return `<div class="top-card">
+        <div class="top-rank ${rk}">${num}</div>
+        <div class="top-ava ${i===0?'gold':''}">${ava}</div>
+        <div class="top-info">
+          <div class="top-name">${p.name}</div>
+          <div class="top-sub">${p.server_name || 'ForGames.Uz'}</div>
+        </div>
+        <div class="top-val">
+          <div class="top-num">${val}</div>
+          <div class="top-lbl">${lbl}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-text">Ошибка загрузки</div></div>';
+  }
+}
+
+function setSort(el) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  loadTop(el.dataset.sort);
+}
+
+// ═══════════════════════════════════════════════════
+//  МАГАЗИН
+// ═══════════════════════════════════════════════════
+async function loadShop() {
+  if (!token) await auth();
+
+  // Баланс
+  try {
+    const prof = await api('/api/profile/me');
+    if (prof.success) {
+      document.getElementById('shop-balance').textContent = fmtNum(prof.user.balance) + ' UZS';
+
+      // Бонус
+      const bonusBlock = document.getElementById('shop-bonus-block');
+      if (!prof.user.bonus_taken) {
+        bonusBlock.innerHTML = `<div class="bonus-card">
+          <div class="bonus-info">
+            <div class="bonus-title">🎁 Стартовый бонус</div>
+            <div class="bonus-desc">Разовый подарок новым игрокам</div>
+          </div>
+          <div>
+            <div class="bonus-amount">+10 000 UZS</div>
+            <button class="btn-primary" style="margin-top:8px;padding:8px;font-size:13px" onclick="claimBonus()">Получить</button>
+          </div>
+        </div>`;
+      } else {
+        bonusBlock.innerHTML = '';
+      }
+    }
+  } catch(e) {}
+
+  // Товары
+  try {
+    const data = await api('/api/shop/items');
+    const el   = document.getElementById('shop-items');
+    if (!data.success) return;
+
+    el.innerHTML = data.data.map(item => `
+      <div class="shop-card ${item.type}">
+        <div class="shop-top">
+          <div>
+            <div class="shop-name ${item.type}">${item.name}</div>
+            <div class="shop-sub">${item.description}</div>
+          </div>
+          <div class="shop-price">
+            <div class="price-val">${fmtNum(item.price)}</div>
+            <div class="price-lbl">UZS / ${item.duration_days} дн.</div>
+          </div>
+        </div>
+        <div class="perks">${item.perks.map(p=>`<span class="perk">${p}</span>`).join('')}</div>
+        <button class="btn-primary" onclick="buyItem(${item.id}, '${item.name}')">Купить ${item.name}</button>
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+
+async function claimBonus() {
+  if (!token) await auth();
+  try {
+    const data = await api('/api/profile/bonus', { method: 'POST' });
+    if (data.success) {
+      toast('🎉 Бонус получен! +10,000 UZS', 'success');
+      loadShop();
+    } else {
+      toast(data.error || 'Ошибка', 'error');
+    }
+  } catch(e) { toast('Ошибка соединения', 'error'); }
+}
+
+async function buyItem(itemId, name) {
+  if (!token) await auth();
+  if (!confirm(`Купить ${name}?`)) return;
+
+  try {
+    const data = await api('/api/shop/buy', {
+      method: 'POST',
+      body: JSON.stringify({ item_id: itemId, server_id: 0 })
+    });
+    if (data.success) {
+      toast('✅ ' + data.message, 'success');
+      if (tg) tg.HapticFeedback?.notificationOccurred('success');
+      loadShop();
+    } else {
+      toast('❌ ' + (data.error || 'Ошибка покупки'), 'error');
+    }
+  } catch(e) { toast('Ошибка соединения', 'error'); }
+}
+
+function showTopup() {
+  const amount = prompt('Введите сумму пополнения (UZS):');
+  if (!amount || isNaN(amount) || Number(amount) < 1000) {
+    toast('Минимум 1000 UZS', 'error');
+    return;
+  }
+  api('/api/shop/topup', {
+    method: 'POST',
+    body: JSON.stringify({ amount: Number(amount), username: userData?.username })
+  }).then(d => {
+    if (d.success) toast('✅ Заявка отправлена! Ожидай зачисления', 'success');
+    else toast('❌ ' + (d.error || 'Ошибка'), 'error');
+  }).catch(() => toast('Ошибка соединения', 'error'));
+}
+
+// ═══════════════════════════════════════════════════
+//  ПРОФИЛЬ
+// ═══════════════════════════════════════════════════
+async function loadProfile() {
+  if (!token) await auth();
+  const el = document.getElementById('profile-content');
+
+  try {
+    const data = await api('/api/profile/me');
+    if (!data.success) { el.innerHTML = '<div class="empty-state"><div class="empty-text">Ошибка загрузки профиля</div></div>'; return; }
+
+    const u = data.user;
+    const s = data.stats || {};
+    const privs = data.privileges || [];
+
+    const kills   = fmtNum(s.total_kills);
+    const kd      = Number(s.kd || 0).toFixed(2);
+    const wins    = fmtNum(s.total_wins);
+    const hs      = fmtNum(s.total_hs);
+
+    el.innerHTML = `
+      <div class="profile-hero">
+        <div class="p-head">
+          <div class="p-ava" style="background:var(--bg4)">${initials(u.first_name)}</div>
+          <div>
+            <div class="p-name">${u.first_name || u.username || 'Игрок'}</div>
+            ${u.steam_id ? `<div class="p-steam">${u.steam_id}</div>` : ''}
+            <div class="rank-pill silver">⭐ ${u.rank}</div>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="sbl">Убийства</div><div class="sbv g">${kills}</div></div>
+          <div class="stat-box"><div class="sbl">K/D Ratio</div><div class="sbv b">${kd}</div></div>
+          <div class="stat-box"><div class="sbl">Победы</div><div class="sbv g">${wins}</div></div>
+          <div class="stat-box"><div class="sbl">Хедшоты</div><div class="sbv y">${hs}</div></div>
+        </div>
+      </div>
+
+      <div class="balance-card">
+        <div>
+          <div class="bal-lbl">Баланс</div>
+          <div class="bal-val">${fmtNum(u.balance)} UZS</div>
+        </div>
+        <button class="topup-btn" onclick="showPage('shop')">Магазин →</button>
+      </div>
+
+      ${!u.steam_id ? `
+      <div class="steam-form">
+        <label>Привязать Steam ID (для статистики)</label>
+        <input class="steam-input" id="steam-input" placeholder="STEAM_0:1:12345" />
+        <button class="btn-outline" style="margin-top:8px" onclick="linkSteam()">Привязать Steam</button>
+      </div>` : ''}
+
+      <div class="section-lbl">Мои привилегии</div>
+      ${privs.length ? privs.map(p => {
+        const days = Math.ceil((new Date(p.expires_at) - Date.now()) / 86400000);
+        return `<div class="priv-card">
+          <div class="priv-icon">${p.type === 'vip' ? '⭐' : '💎'}</div>
+          <div class="priv-info">
+            <div class="priv-name">${p.name}</div>
+            <div class="priv-srv">${p.server_name || 'Все серверы'}</div>
+          </div>
+          <div class="priv-exp">${days} дн.</div>
+        </div>`;
+      }).join('') : '<div class="empty-state"><div class="empty-icon" style="font-size:28px">🔑</div><div class="empty-text">Нет активных привилегий</div></div>'}
+    `;
+  } catch(e) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-text">Ошибка соединения с сервером</div></div>';
+  }
+}
+
+async function linkSteam() {
+  const steamId = document.getElementById('steam-input')?.value.trim();
+  if (!steamId) return toast('Введи Steam ID', 'error');
+
+  try {
+    const data = await api('/api/profile/steam', {
+      method: 'POST',
+      body: JSON.stringify({ steam_id: steamId })
+    });
+    if (data.success) { toast('✅ Steam ID привязан!'); loadProfile(); }
+    else toast('❌ ' + (data.error || 'Ошибка'), 'error');
+  } catch(e) { toast('Ошибка', 'error'); }
+}
+
+// ═══════════════════════════════════════════════════
+//  ИНИЦИАЛИЗАЦИЯ
+// ═══════════════════════════════════════════════════
+(async () => {
+  await auth();
+  loadServers();
+
+  // Обновляем серверы каждые 30 секунд
+  setInterval(() => {
+    const activePage = document.querySelector('.page.active')?.id;
+    if (activePage === 'page-servers') loadServers();
+  }, 30000);
+})();
+</script>
+</body>
+</html>
