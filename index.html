@@ -279,7 +279,10 @@ function toast(msg, type = 'ok', dur = 2800) {
   setTimeout(() => el.classList.remove('show'), dur);
 }
 async function api(path, opts = {}) {
-  const h = { 'Content-Type': 'application/json' };
+  const h = { 
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true' // <-- ДОБАВЬ ЭТУ СТРОКУ
+  };
   if (token) h['Authorization'] = 'Bearer ' + token;
   const r = await fetch(API + path, { headers: h, ...opts });
   return r.json();
