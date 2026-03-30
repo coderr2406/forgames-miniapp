@@ -1110,9 +1110,10 @@ body::after {
    CORE CONFIG
 ═══════════════════════════════════════════════ */
 const API_BASE = 'https://api.forgames.uz';
-const FLAGSHIP = { ip:'83.69.139.225', port:27014, full:'83.69.139.225:27014' };
+// Flagship IP — используется как fallback для Fast Connect если API не ответил
+const FLAGSHIP_FALLBACK = '83.69.139.225:27014';
 const FOUNDER_USERS = ['coder2406'];
-const FOUNDER_IDS = [7640508983]; // replace with actual numeric id
+const FOUNDER_IDS = [YOUR_TELEGRAM_ID]; // replace with actual numeric id
 
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); }
@@ -1124,6 +1125,9 @@ let currentShopTab = 'public';
 let currentTopFilter = 'kills';
 let topData = {};
 let shopBalance = 0;
+// Кэш данных серверов из API
+let serversCache = null;
+let flagshipIpFull = FLAGSHIP_FALLBACK; // будет обновлён из API
 
 /* ═══════════════════════════════════════════════
    UTILS
@@ -1192,72 +1196,113 @@ function navTo(page) {
 }
 
 /* ═══════════════════════════════════════════════
-   HOME — FLAGSHIP SERVER
+   HOME — загрузка серверов через API
 ═══════════════════════════════════════════════ */
 async function loadHome() {
-  loadFlagship();
-  loadServerList();
+  // Один запрос к /api/servers — результат используем в обеих функциях
+  await fetchServers();
+  renderFlagship();
+  renderServerList();
   renderNews();
 }
 
-async function loadFlagship() {
-  const wrap = $('flagship-wrap');
+// Загружает список серверов из API и кэширует
+async function fetchServers() {
   try {
-    const d = await apiCall(`/api/servers/query?ip=${FLAGSHIP.ip}&port=${FLAGSHIP.port}`);
-    const srv = d.server || {};
-    const players = srv.players || 0;
-    const maxp = srv.maxplayers || 32;
-    const map = srv.map || 'de_dust2';
-    const pct = Math.round((players/maxp)*100);
-    const online = srv.online !== false;
-
-    wrap.innerHTML = `
-      <div class="flagship-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div class="flagship-badge">🔥 FLAGSHIP SERVER</div>
-          <div style="font-family:var(--font-mono);font-size:9px;color:${online?'var(--green)':'var(--red)'};background:${online?'var(--green-dim)':'var(--red-dim)'};border:1px solid ${online?'var(--green-mid)':'rgba(255,61,90,0.25)'};padding:3px 8px;border-radius:20px;">${online?'● ONLINE':'○ OFFLINE'}</div>
-        </div>
-        <div class="flagship-name">PUBLIC Server #1</div>
-        <div class="flagship-ip">${FLAGSHIP.full}</div>
-        <div class="flagship-row">
-          <div class="flagship-players">
-            <div><span class="flagship-count">${players}</span><span style="font-family:var(--font-body);font-size:18px;color:var(--txt3)">/${maxp}</span></div>
-            <div style="font-family:var(--font-mono);font-size:9px;color:var(--txt3);letter-spacing:0.5px;margin-top:2px;">ИГРОКОВ ОНЛАЙН</div>
-          </div>
-          <div class="flagship-map-box">
-            <div class="flagship-map-lbl">Карта</div>
-            <div class="flagship-map-val">${map}</div>
-          </div>
-        </div>
-        <div class="flagship-bar-wrap"><div class="flagship-bar" id="fship-bar" style="width:0%"></div></div>
-        <button class="btn-fast" onclick="fastConnect()">
-          <span class="ico">⚡</span> FAST CONNECT
-        </button>
-      </div>
-    `;
-    setTimeout(()=>{ const b=$('fship-bar'); if(b) b.style.width=pct+'%'; },100);
+    const d = await fetch(`${API_BASE}/api/servers`, {
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+    }).then(r => r.json());
+    // API может вернуть { servers: [...] } или просто массив
+    serversCache = Array.isArray(d) ? d : (d.servers || d.data || []);
   } catch(e) {
-    wrap.innerHTML = `
-      <div class="flagship-card">
-        <div class="flagship-badge">🔥 FLAGSHIP SERVER</div>
-        <div class="flagship-name">PUBLIC Server #1</div>
-        <div class="flagship-ip">${FLAGSHIP.full}</div>
-        <div style="font-family:var(--font-mono);font-size:11px;color:var(--txt3);margin-bottom:14px;">Нет данных</div>
-        <div class="flagship-bar-wrap"><div class="flagship-bar" style="width:0%"></div></div>
-        <button class="btn-fast" onclick="fastConnect()">
-          <span class="ico">⚡</span> FAST CONNECT
-        </button>
-      </div>`;
+    console.warn('fetchServers error', e);
+    serversCache = [];
   }
+}
+
+// Определяет flagship: ищем порт 27014, тип 'public', или флаг is_flagship
+function findFlagship(servers) {
+  return servers.find(s =>
+    s.port === 27014 ||
+    s.is_flagship === true ||
+    (s.type || '').toLowerCase() === 'public' ||
+    (s.name || '').toLowerCase().includes('public')
+  ) || servers[0] || null;
+}
+
+function renderFlagship() {
+  const wrap = $('flagship-wrap');
+  const flagship = findFlagship(serversCache || []);
+
+  if (!flagship) {
+    // API недоступен — показываем заглушку с кнопкой Fast Connect
+    wrap.innerHTML = flagshipHtml({
+      name: 'PUBLIC Server #1',
+      ip: FLAGSHIP_FALLBACK.split(':')[0],
+      port: 27014,
+      players: 0, maxplayers: 32,
+      map: '—', online: false
+    });
+    return;
+  }
+
+  // Обновляем глобальный IP для Fast Connect
+  flagshipIpFull = `${flagship.ip}:${flagship.port}`;
+
+  const players = flagship.players ?? flagship.num_players ?? 0;
+  const maxp    = flagship.maxplayers ?? flagship.max_players ?? 32;
+  const map     = flagship.map ?? flagship.current_map ?? '—';
+  const online  = flagship.online !== false && flagship.status !== 'offline';
+
+  wrap.innerHTML = flagshipHtml({ name: flagship.name || 'PUBLIC Server #1',
+    ip: flagship.ip, port: flagship.port, players, maxp, map, online });
+
+  const pct = maxp ? Math.round(players / maxp * 100) : 0;
+  setTimeout(() => { const b = $('fship-bar'); if (b) b.style.width = pct + '%'; }, 100);
+}
+
+function flagshipHtml({ name, ip, port, players, maxp, map, online }) {
+  const ipFull = `${ip}:${port}`;
+  const statusStyle = online
+    ? 'color:var(--green);background:var(--green-dim);border:1px solid var(--green-mid)'
+    : 'color:var(--red);background:var(--red-dim);border:1px solid rgba(255,61,90,0.25)';
+  return `
+    <div class="flagship-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="flagship-badge">🔥 FLAGSHIP SERVER</div>
+        <div style="font-family:var(--font-mono);font-size:9px;${statusStyle};padding:3px 8px;border-radius:20px;">
+          ${online ? '● ONLINE' : '○ OFFLINE'}
+        </div>
+      </div>
+      <div class="flagship-name">${name}</div>
+      <div class="flagship-ip">${ipFull}</div>
+      <div class="flagship-row">
+        <div class="flagship-players">
+          <div>
+            <span class="flagship-count">${players}</span>
+            <span style="font-family:var(--font-body);font-size:18px;color:var(--txt3)">/${maxp}</span>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--txt3);letter-spacing:0.5px;margin-top:2px;">ИГРОКОВ ОНЛАЙН</div>
+        </div>
+        <div class="flagship-map-box">
+          <div class="flagship-map-lbl">Карта</div>
+          <div class="flagship-map-val">${map}</div>
+        </div>
+      </div>
+      <div class="flagship-bar-wrap"><div class="flagship-bar" id="fship-bar" style="width:0%"></div></div>
+      <button class="btn-fast" onclick="fastConnect()">
+        <span class="ico">⚡</span> FAST CONNECT
+      </button>
+    </div>`;
 }
 
 function fastConnect() {
   haptic('heavy');
-  const ip = FLAGSHIP.full;
+  const ip = flagshipIpFull;
   if (navigator.clipboard) {
-    navigator.clipboard.writeText(ip).then(() => {
-      showToast('IP скопирован! Заходи в CS 1.6 🎮', 'ok');
-    }).catch(() => fallbackCopy(ip));
+    navigator.clipboard.writeText(ip)
+      .then(() => showToast('IP скопирован! Заходи в CS 1.6 🎮', 'ok'))
+      .catch(() => fallbackCopy(ip));
   } else {
     fallbackCopy(ip);
   }
@@ -1274,52 +1319,49 @@ function fallbackCopy(text) {
   document.body.removeChild(el);
 }
 
-async function loadServerList() {
+// Рендерит CW-серверы (всё кроме flagship) из кэша API
+function renderServerList() {
   const el = $('servers-list');
-  const CW_SERVERS = [
-    {ip:'63.250.59.135',port:27015,name:'CW #1 — Main'},
-    {ip:'63.250.59.135',port:27016,name:'CW #2'},
-    {ip:'63.250.59.135',port:27017,name:'CW #3'},
-    {ip:'63.250.59.135',port:27018,name:'CW #4'},
-    {ip:'63.250.59.135',port:27019,name:'CW #5'},
-    {ip:'63.250.59.135',port:27020,name:'CW #6'},
-    {ip:'63.250.59.135',port:27021,name:'CW #7'},
-  ];
-  try {
-    const results = await Promise.allSettled(
-      CW_SERVERS.map(s => apiCall(`/api/servers/query?ip=${s.ip}&port=${s.port}`))
-    );
-    el.innerHTML = CW_SERVERS.map((s,i) => {
-      const res = results[i];
-      const srv = (res.status==='fulfilled' && res.value?.server) ? res.value.server : null;
-      const pl = srv?.players ?? 0;
-      const mx = srv?.maxplayers ?? 20;
-      const map = srv?.map ?? '—';
-      const pct = mx ? Math.round(pl/mx*100) : 0;
-      const cls = srv ? (pl>0?'online':'offline') : 'offline';
-      return `<div class="srv-card">
-        <div class="srv-dot ${cls}"></div>
-        <div class="srv-info">
-          <div class="srv-name-txt">${s.name}</div>
-          <div class="srv-meta">
-            <span class="srv-map-txt">${map}</span>
-            <span class="srv-ip-txt">${s.ip}:${s.port}</span>
-          </div>
-        </div>
-        <div class="srv-right">
-          <div class="srv-cnt">${pl}<span class="slash">/${mx}</span></div>
-          <div class="srv-mini-bar"><div class="srv-mini-fill" style="width:${pct}%"></div></div>
-        </div>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    el.innerHTML = `<div class="empty"><div class="empty-ico">🔌</div><div class="empty-txt">Ошибка соединения</div></div>`;
+  const servers = serversCache || [];
+  const flagship = findFlagship(servers);
+
+  // Все серверы кроме flagship
+  const cwList = servers.filter(s => s !== flagship);
+
+  if (!cwList.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-ico">🔌</div><div class="empty-txt">Серверы не найдены</div></div>`;
+    return;
   }
+
+  el.innerHTML = cwList.map((s, i) => {
+    const pl  = s.players ?? s.num_players ?? 0;
+    const mx  = s.maxplayers ?? s.max_players ?? 20;
+    const map = s.map ?? s.current_map ?? '—';
+    const pct = mx ? Math.round(pl / mx * 100) : 0;
+    const online = s.online !== false && s.status !== 'offline';
+    const cls = online ? (pl > 0 ? 'online' : 'offline') : 'offline';
+    const ipFull = `${s.ip}:${s.port}`;
+    const name = s.name || `CW #${i + 1}`;
+    return `<div class="srv-card">
+      <div class="srv-dot ${cls}"></div>
+      <div class="srv-info">
+        <div class="srv-name-txt">${name}</div>
+        <div class="srv-meta">
+          <span class="srv-map-txt">${map}</span>
+          <span class="srv-ip-txt">${ipFull}</span>
+        </div>
+      </div>
+      <div class="srv-right">
+        <div class="srv-cnt">${pl}<span class="slash">/${mx}</span></div>
+        <div class="srv-mini-bar"><div class="srv-mini-fill" style="width:${pct}%"></div></div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function renderNews() {
   const news = [
-    { type:'update', title:'🚀 Запущен Flagship Public Server', body:`Новый флагманский сервер теперь доступен на ${FLAGSHIP.full}. Максимальная скорость, честная игра, нет lag'а.`, date:'30 июн 2025' },
+    { type:'update', title:'🚀 Запущен Flagship Public Server', body:`Новый флагманский сервер теперь доступен на ${flagshipIpFull}. Максимальная скорость, честная игра, нет lag'а.`, date:'30 июн 2025' },
     { type:'event', title:'⚔️ Турнир выходного дня', body:'Регистрация открыта! Призовой фонд 500,000 UZS. Напишите @coder2406 для участия.', date:'28 июн 2025' },
     { type:'info', title:'💰 Новые привилегии в магазине', body:'Добавлены новые пакеты привилегий для Public сервера. Получи преимущества с первого дня!', date:'25 июн 2025' },
   ];
@@ -1340,7 +1382,10 @@ async function loadShop() {
   bEl.innerHTML = `<div class="sk sk-h" style="height:80px;border-radius:16px;margin-bottom:12px;"></div>`;
   try {
     if (!token) await auth();
-    const d = await apiCall('/api/profile/me');
+    // Запрос профиля через fetch — читаем поле steam_id с нижним подчёркиванием
+    const d = await fetch(`${API_BASE}/api/profile/me`, {
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+    }).then(r => r.json());
     const bal = d.user?.balance ?? 0;
     shopBalance = bal;
     bEl.innerHTML = `
@@ -1656,13 +1701,18 @@ async function loadProfile() {
     <div class="sk sk-h" style="height:80px;border-radius:16px;margin-bottom:10px;"></div>`;
   try {
     if (!token) await auth();
-    const d = await apiCall('/api/profile/me');
+    // Используем fetch напрямую к /api/profile/me
+    const d = await fetch(`${API_BASE}/api/profile/me`, {
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+    }).then(r => r.json());
+
     const u = d.user || {};
     const s = d.stats || {};
     const privs = d.privileges || [];
     const founder = isFounder(userData || u);
 
-    const avaEl = `<div class="pf-ava" style="${founder?'border-color:var(--gold);color:var(--gold);box-shadow:0 0 24px rgba(255,215,64,0.25)':''}">${inits(u.first_name||u.username||'U')}</div>`;
+    // Поле steam_id (с нижним подчёркиванием) — как в API
+    const hasSteam = !!u.steam_id;
 
     const founderBlock = founder ? `
       <div class="founder-hero">
@@ -1687,10 +1737,12 @@ async function loadProfile() {
         </div>
       </div>` : `
       <div class="profile-card">
-        <div class="pf-top">${avaEl}
+        <div class="pf-top">
+          <div class="pf-ava">${inits(u.first_name||u.username||'U')}</div>
           <div>
             <div class="pf-name">${u.first_name||u.username||'Игрок'}</div>
             ${u.username?`<div class="pf-handle">@${u.username}</div>`:''}
+            ${u.steam_id?`<div style="font-family:var(--font-mono);font-size:10px;color:var(--blue);margin-top:3px;">${u.steam_id}</div>`:''}
           </div>
         </div>
         <div class="pf-4grid">
@@ -1718,7 +1770,7 @@ async function loadProfile() {
            <div class="empty-txt">Нет активных привилегий</div>
          </div>`;
 
-    const steamBlock = !u.steam_id ? `
+    const steamBlock = !hasSteam ? `
       <div class="card" style="margin-bottom:10px">
         <div style="font-family:var(--font-title);font-size:10px;letter-spacing:1px;color:var(--txt3);margin-bottom:10px">ПРИВЯЗАТЬ STEAM ID</div>
         <div class="topup-form">
@@ -1764,10 +1816,11 @@ async function linkSteam() {
 (async () => {
   await auth();
   loadHome();
-  setInterval(() => {
+  setInterval(async () => {
     if (currentPage === 'home') {
-      loadFlagship();
-      loadServerList();
+      await fetchServers();
+      renderFlagship();
+      renderServerList();
     }
   }, 30000);
 })();
