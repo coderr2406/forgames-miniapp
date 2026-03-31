@@ -1162,20 +1162,34 @@ async function apiCall(path, opts={}) {
 async function auth() {
   const initData = tg?.initData || '';
   userData = tg?.initDataUnsafe?.user || null;
-  if (!initData && !userData) {
-    // Dev fallback
-    userData = { id:12345, username:'testuser', first_name:'Test' };
-    return;
-  }
-  try {
-    const d = await apiCall('/api/auth/telegram', {
-      method:'POST',
-      body: JSON.stringify({ initData, user: userData })
-    });
-    if (d.token) token = d.token;
-  } catch(e) { console.warn('Auth failed', e); }
-}
 
+  // Если заходим не через Telegram (для тестов)
+  if (!userData) {
+    userData = { id: 7640508983, username: 'coder2406', first_name: 'Founder' };
+  }
+
+  try {
+    // 1. МЕНЯЕМ ПУТЬ: твой сервер ждет /api/profile/auth
+    const d = await apiCall('/api/profile/auth', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        telegram_id: userData.id, 
+        username: userData.username || '', 
+        first_name: userData.first_name || 'Player' 
+      })
+    });
+
+    if (d.token) {
+      token = d.token;
+      console.log('✅ Auth Success');
+      // Сразу вызываем обновление данных после получения токена
+      loadProfile(); 
+      if (typeof loadServers === 'function') loadServers();
+    }
+  } catch(e) { 
+    console.error('❌ Auth Error:', e); 
+  }
+}
 /* ═══════════════════════════════════════════════
    NAVIGATION
 ═══════════════════════════════════════════════ */
