@@ -1740,9 +1740,9 @@ async function loadProfile() {
             </div>
           </div>
           <div class="pf-4grid">
-            <div class="pf-cell"><div class="pf-lbl">Убийства</div><div class="pf-val g">${fmt(s.total_kills)}</div></div>
+            <div class="pf-cell"><div class="pf-lbl">Убийства</div><div class="pf-val g">${fmt(s.kills)}</div></div>
             <div class="pf-cell"><div class="pf-lbl">K/D</div><div class="pf-val b">${Number(s.kd||0).toFixed(2)}</div></div>
-            <div class="pf-cell"><div class="pf-lbl">Победы</div><div class="pf-val g">${fmt(s.total_wins)}</div></div>
+            <div class="pf-cell"><div class="pf-lbl">Победы</div><div class="pf-val g">${fmt(s.wins)}</div></div>
             <div class="pf-cell"><div class="pf-lbl">Баланс</div><div class="pf-val gold">${fmt(u.balance)}</div></div>
           </div>
         </div>
