@@ -1235,34 +1235,39 @@ function renderFlagship() {
   const flagship = findFlagship(serversCache || []);
 
   if (!flagship) {
-    // API недоступен — показываем заглушку с кнопкой Fast Connect
+    // API недоступен — показываем заглушку
     wrap.innerHTML = flagshipHtml({
       name: 'PUBLIC Server #1',
-      ip: FLAGSHIP_FALLBACK.split(':')[0],
+      host: 'Forgames.uz',
       port: 27014,
-      players: 0, maxplayers: 32,
+      players: 0, maxp: 32,
       map: '—', online: false
     });
     return;
   }
 
-  // Обновляем глобальный IP для Fast Connect
-  flagshipIpFull = `${flagship.host}:${flagship.port}`;
+  // ТУТ СЕКРЕТ: Формируем команду connect для копирования
+  flagshipIpFull = `connect Forgames.uz:${flagship.port}`;
 
   const players = flagship.players ?? flagship.num_players ?? 0;
   const maxp    = flagship.maxplayers ?? flagship.max_players ?? 32;
   const map     = flagship.map ?? flagship.current_map ?? '—';
   const online  = flagship.online !== false && flagship.status !== 'offline';
 
-  wrap.innerHTML = flagshipHtml({ name: flagship.name || 'PUBLIC Server #1',
-    ip: flagship.ip, port: flagship.port, players, maxp, map, online });
+  // Передаем host 'Forgames.uz' для красивого отображения
+  wrap.innerHTML = flagshipHtml({ 
+    name: flagship.name || 'PUBLIC Server #1',
+    host: 'Forgames.uz', 
+    port: flagship.port, 
+    players, maxp, map, online 
+  });
 
   const pct = maxp ? Math.round(players / maxp * 100) : 0;
   setTimeout(() => { const b = $('fship-bar'); if (b) b.style.width = pct + '%'; }, 100);
 }
 
-function flagshipHtml({ name, ip, port, players, maxp, map, online }) {
-  const ipFull = `${ip}:${port}`;
+function flagshipHtml({ name, host, port, players, maxp, map, online }) {
+  const ipFull = `${host}:${port}`;
   const statusStyle = online
     ? 'color:var(--green);background:var(--green-dim);border:1px solid var(--green-mid)'
     : 'color:var(--red);background:var(--red-dim);border:1px solid rgba(255,61,90,0.25)';
@@ -1298,13 +1303,13 @@ function flagshipHtml({ name, ip, port, players, maxp, map, online }) {
 
 function fastConnect() {
   haptic('heavy');
-  const ip = flagshipIpFull;
+  const command = flagshipIpFull; // Здесь уже лежит "connect Forgames.uz:27014"
   if (navigator.clipboard) {
-    navigator.clipboard.writeText(ip)
-      .then(() => showToast('IP скопирован! Заходи в CS 1.6 🎮', 'ok'))
-      .catch(() => fallbackCopy(ip));
+    navigator.clipboard.writeText(command)
+      .then(() => showToast('Команда скопирована! Вставь в консоль CS 1.6 🎮', 'ok'))
+      .catch(() => fallbackCopy(command));
   } else {
-    fallbackCopy(ip);
+    fallbackCopy(command);
   }
 }
 
@@ -1314,8 +1319,12 @@ function fallbackCopy(text) {
   el.style.position = 'fixed'; el.style.opacity = '0';
   document.body.appendChild(el);
   el.select();
-  try { document.execCommand('copy'); showToast('IP скопирован! Заходи в CS 1.6 🎮', 'ok'); }
-  catch(e) { showToast(text, 'ok'); }
+  try { 
+    document.execCommand('copy'); 
+    showToast('Команда скопирована! Вставь в консоль CS 1.6 🎮', 'ok'); 
+  } catch(e) { 
+    showToast('Ошибка копирования', 'err'); 
+  }
   document.body.removeChild(el);
 }
 
@@ -1325,7 +1334,6 @@ function renderServerList() {
   const servers = serversCache || [];
   const flagship = findFlagship(servers);
 
-  // Все серверы кроме flagship
   const cwList = servers.filter(s => s !== flagship);
 
   if (!cwList.length) {
@@ -1340,8 +1348,11 @@ function renderServerList() {
     const pct = mx ? Math.round(pl / mx * 100) : 0;
     const online = s.online !== false && s.status !== 'offline';
     const cls = online ? (pl > 0 ? 'online' : 'offline') : 'offline';
-    const ipFull = `${s.ip}:${s.port}`;
+    
+    // Используем домен вместо IP
+    const ipFull = `Forgames.uz:${s.port}`;
     const name = s.name || `CW #${i + 1}`;
+    
     return `<div class="srv-card">
       <div class="srv-dot ${cls}"></div>
       <div class="srv-info">
