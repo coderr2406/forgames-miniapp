@@ -1247,7 +1247,7 @@ function renderFlagship() {
   }
 
   // Обновляем глобальный IP для Fast Connect
-  flagshipIpFull = `${flagship.ip}:${flagship.port}`;
+  flagshipIpFull = `${flagship.host}:${flagship.port}`;
 
   const players = flagship.players ?? flagship.num_players ?? 0;
   const maxp    = flagship.maxplayers ?? flagship.max_players ?? 32;
