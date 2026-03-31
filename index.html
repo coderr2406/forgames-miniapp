@@ -1385,19 +1385,40 @@ function renderServerList() {
   }).join('');
 }
 
-function renderNews() {
-  const news = [
-    { type:'update', title:'🚀 Запущен Flagship Public Server', body:`Новый флагманский сервер теперь доступен на ${flagshipIpFull}. Максимальная скорость, честная игра, нет lag'а.`, date:'30 июн 2025' },
-    { type:'event', title:'⚔️ Турнир выходного дня', body:'Регистрация открыта! Призовой фонд 500,000 UZS. Напишите @coder2406 для участия.', date:'28 июн 2025' },
-    { type:'info', title:'💰 Новые привилегии в магазине', body:'Добавлены новые пакеты привилегий для Public сервера. Получи преимущества с первого дня!', date:'25 июн 2025' },
-  ];
-  $('news-list').innerHTML = news.map(n=>`
-    <div class="news-card">
-      <div class="news-type ${n.type}">${n.type==='update'?'ОБНОВЛЕНИЕ':n.type==='event'?'СОБЫТИЕ':'ИНФО'}</div>
-      <div class="news-title">${n.title}</div>
-      <div class="news-body">${n.body}</div>
-      <div class="news-date">${n.date}</div>
-    </div>`).join('');
+async function renderNews() {
+  const container = $('news-list'); // Убедись, что в HTML у тебя id="news-list"
+  if (!container) return;
+
+  // Показываем скелетон (анимацию загрузки), пока ждем ответ от сервера
+  container.innerHTML = '<div class="sk sk-h" style="height:100px;border-radius:15px;opacity:0.5;"></div>';
+
+  try {
+    // 1. Запрашиваем новости из твоего API
+    const d = await apiCall('/api/news/all');
+
+    if (d.success && d.data.length > 0) {
+      // 2. Если новости есть, рисуем их
+      container.innerHTML = d.data.map(n => {
+        // Определяем текст на плашке (badge)
+        const typeText = n.badge === 'ИНФО' ? 'ИНФО' : (n.badge === 'СОБЫТИЕ' ? 'СОБЫТИЕ' : 'ОБНОВЛЕНИЕ');
+        // Определяем класс для цвета (badge_color из базы)
+        const typeClass = n.badge_color || 'green'; // green, blue, red и т.д.
+
+        return `
+          <div class="news-card">
+            <div class="news-type ${typeClass}">${typeText}</div>
+            <div class="news-title">${n.title}</div>
+            <div class="news-body">${n.content}</div>
+            <div class="news-date">${new Date(n.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+          </div>`;
+      }).join('');
+    } else {
+      container.innerHTML = '<div class="empty-txt">Новостей пока нет</div>';
+    }
+  } catch (e) {
+    console.error("Ошибка загрузки новостей:", e);
+    container.innerHTML = '<div class="empty-txt">Ошибка загрузки новостей</div>';
+  }
 }
 
 /* ═══════════════════════════════════════════════
