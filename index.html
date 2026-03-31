@@ -1539,56 +1539,71 @@ function openTopup() {
 }
 
 /* ═══════════════════════════════════════════════
-   STATS
+    STATS (FIXED FOR KAMATERA API)
 ═══════════════════════════════════════════════ */
 async function searchStats() {
   haptic('medium');
   const nick = $('stats-nick').value.trim();
   if (!nick) { showToast('Введи Steam ID или ник', 'err'); return; }
+  
   const el = $('stats-content');
   el.innerHTML = `
     <div class="sk sk-h" style="height:200px;border-radius:20px;margin-bottom:10px;"></div>
     <div class="sk sk-h2"></div><div class="sk sk-h2"></div>`;
+    
   try {
     if (!token) await auth();
-    const d = await apiCall(`/api/stats/player?query=${encodeURIComponent(nick)}`);
-    if (!d.success || !d.player) {
+    
+    // 1. ИСПРАВЛЕНО: параметр query заменен на q (как ждет сервер)
+    const d = await apiCall(`/api/stats/player?q=${encodeURIComponent(nick)}`);
+    
+    // 2. ИСПРАВЛЕНО: проверяем d.data вместо d.player
+    if (!d.success || !d.data) {
       el.innerHTML = `<div class="empty"><div class="empty-ico">🔍</div><div class="empty-txt">Игрок не найден</div></div>`;
       return;
     }
-    renderPlayerCard(el, d.player);
+    
+    // Передаем d.data (там лежит объект игрока)
+    renderPlayerCard(el, d.data);
+    
   } catch(e) {
+    console.error("Ошибка поиска:", e);
     el.innerHTML = `<div class="empty"><div class="empty-ico">⚠️</div><div class="empty-txt">Ошибка соединения</div></div>`;
   }
 }
 
 function renderPlayerCard(el, p) {
-  const kills = p.total_kills ?? 0;
-  const deaths = p.total_deaths ?? 1;
-  const kd = (kills/deaths).toFixed(2);
-  const hs = p.total_hs ?? 0;
-  const wins = p.total_wins ?? 0;
+  // 3. ИСПРАВЛЕНО: сопоставляем поля с твоей базой (kills вместо total_kills и т.д.)
+  const kills = p.kills ?? 0;
+  const deaths = p.deaths ?? 1;
+  const kd = p.kd ?? (kills/Math.max(1, deaths)).toFixed(2);
+  const hs = p.headshots ?? 0;
+  const wins = p.wins ?? 0;
+  
+  // Поля, которых пока нет в БД, ставим по дефолту
   const skill = p.skill ?? 0;
   const rank = p.rank ?? 'Новичок';
+  
   const rankMap = {
     'Новичок':'rk-novice','Боец':'rk-fighter','Ветеран':'rk-veteran',
     'Элита':'rk-elite','Легенда':'rk-legend'
   };
   const ranks = ['Новичок','Боец','Ветеран','Элита','Легенда'];
   const ri = ranks.indexOf(rank);
-  const maxSkill = 5000;
   const nextRankSkill = (ri+1)*1000;
   const curRankSkill = ri*1000;
-  const pct = Math.min(100,Math.round(((skill-curRankSkill)/(nextRankSkill-curRankSkill))*100));
+  const pct = Math.min(100,Math.round(((skill-curRankSkill)/Math.max(1, nextRankSkill-curRankSkill))*100));
+  
   const kdPct = Math.min(100, Math.round(parseFloat(kd)/3*100));
   const hsPct = kills ? Math.round(hs/kills*100) : 0;
 
+  // 4. ИСПРАВЛЕНО: используем p.username вместо p.name
   el.innerHTML = `
     <div class="player-hero">
       <div class="ph-top">
-        <div class="ph-avatar">${inits(p.name||p.steam_id||'?')}</div>
+        <div class="ph-avatar">${inits(p.username || '?')}</div>
         <div>
-          <div class="ph-name">${p.name || 'Unknown'}</div>
+          <div class="ph-name">${p.username || 'Unknown'}</div>
           <div class="ph-steam">${p.steam_id || '—'}</div>
           <div class="rank-badge ${rankMap[rank]||'rk-novice'}">★ ${rank}</div>
         </div>
