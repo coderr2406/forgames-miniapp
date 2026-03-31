@@ -1659,10 +1659,9 @@ function renderPlayerCard(el, p) {
 }
 
 /* ═══════════════════════════════════════════════
-    TOP LEADERBOARD (FIXED)
+    TOP LEADERBOARD (FULL VERSION with RANKS)
 ═══════════════════════════════════════════════ */
 async function loadTop() {
-  // Убираем кэширование на время тестов, чтобы данные всегда были свежие
   const el = $('top-content');
   el.innerHTML = `
     <div class="sk sk-h" style="height:160px;border-radius:20px;margin-bottom:12px;"></div>
@@ -1670,10 +1669,8 @@ async function loadTop() {
     
   try {
     if (!token) await auth();
-    // 1. Исправлен путь и параметры (убрали лишний type)
+    // Запрашиваем данные (лимит 20 игроков)
     const d = await apiCall(`/api/stats/top?limit=20`);
-    
-    // 2. Исправлен парсинг: берем данные из d.data (как присылает твой сервер)
     const players = d.data || []; 
     
     if (!players.length) {
@@ -1691,23 +1688,13 @@ async function loadTop() {
 
 function renderTop(players) {
   const el = $('top-content');
-  if (!players || !players.length) {
-    el.innerHTML = `<div class="empty"><div class="empty-ico">🏆</div><div class="empty-txt">Нет данных</div></div>`;
-    return;
-  }
+  if (!players || !players.length) return;
 
-  // 3. Исправлен keyMap: сопоставляем фильтры с реальными именами из твоей БД
-  const keyMap = { 
-    kills: 'kills', 
-    kd: 'kd', 
-    headshots: 'headshots', 
-    wins: 'wins' 
-  };
-  
+  const keyMap = { kills: 'kills', kd: 'kd', headshots: 'headshots', wins: 'wins' };
   const key = keyMap[currentTopFilter] || 'kills';
   const lbl = { kills:'убийств', kd:'K/D', headshots:'хедшотов', wins:'побед' }[currentTopFilter];
 
-  // Сортируем локально на всякий случай
+  // Сортировка по выбранному фильтру
   const sorted = [...players].sort((a, b) => Number(b[key]) - Number(a[key]));
 
   const top3 = sorted.slice(0,3);
@@ -1715,13 +1702,14 @@ function renderTop(players) {
 
   const podHtml = (() => {
     const [p1,p2,p3] = top3;
-    // 4. Заменили p.name на p.username (как в твоей базе)
     const pod = (p, cls, crown) => !p ? '<div></div>' : `
       <div class="podium-item ${cls}">
         ${crown ? `<div class="pod-crown">${crown}</div>` : '<div style="height:28px"></div>'}
         <div class="podium-plinth">
-          <div class="pod-avatar">${inits(p.username || 'P')}</div>
+          <div class="pod-avatar">${inits(p.username || '?')}</div>
           <div class="pod-name">${p.username || 'Unknown'}</div>
+          <!-- Добавили Ранг под ником в подиуме -->
+          <div style="font-size:10px; color:var(--gold); margin-top:-4px; margin-bottom:4px;">${p.rank || 'Новичок'}</div>
           <div class="pod-val">${currentTopFilter === 'kd' ? Number(p[key] || 0).toFixed(2) : (p[key] || 0)}</div>
         </div>
       </div>`;
@@ -1733,9 +1721,13 @@ function renderTop(players) {
   const restHtml = rest.map((p, i) => `
     <div class="top-row">
       <div class="tr-rank" style="color:var(--txt3)">${i+4}</div>
-      <div class="tr-avatar">${inits(p.username || 'P')}</div>
+      <div class="tr-avatar">${inits(p.username || '?')}</div>
       <div class="tr-info">
-        <div class="tr-name">${p.username || 'Unknown'}</div>
+        <div class="tr-name">
+            ${p.username || 'Unknown'} 
+            <!-- Добавили Ранг рядом с ником в списке -->
+            <span style="font-size:10px; color:var(--gold); margin-left:5px;">[${p.rank || 'Новичок'}]</span>
+        </div>
         <div class="tr-sub">${p.steam_id || 'Не привязан'}</div>
       </div>
       <div class="tr-val">
@@ -1746,17 +1738,6 @@ function renderTop(players) {
 
   el.innerHTML = podHtml + restHtml;
 }
-
-function switchTopFilter(filter, btn) {
-  haptic('light');
-  currentTopFilter = filter;
-  document.querySelectorAll('.top-flt').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  // Очищаем кэш при смене фильтра, чтобы данные перекачались правильно под ключ
-  topData = {}; 
-  loadTop();
-}
-
 /* ═══════════════════════════════════════════════
    PROFILE
 ═══════════════════════════════════════════════ */
