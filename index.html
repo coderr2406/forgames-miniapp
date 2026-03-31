@@ -2,227 +2,258 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>ForGames.Uz</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-/* ════════════════════════════════════════════════
-   CORE DESIGN TOKENS & BACKGROUND
-════════════════════════════════════════════════ */
-:root {
-  --void: #05070a; --void2: #080b10; --void3: #0c1018;
-  --panel: rgba(12,16,24,0.85); --panel2: rgba(16,22,34,0.9);
-  --glass: rgba(255,255,255,0.03); --glass2: rgba(255,255,255,0.06);
-  --green: #00e676; --green-dim: rgba(0,230,118,0.08); --green-mid: rgba(0,230,118,0.18); --green-glow: rgba(0,230,118,0.35);
-  --blue: #00d2ff; --blue-dim: rgba(0,210,255,0.08); --blue-mid: rgba(0,210,255,0.18); --blue-glow: rgba(0,210,255,0.35);
-  --gold: #ffd740; --gold-dim: rgba(255,215,64,0.12); --silver: #b0c4d8; --bronze: #ff8a55;
-  --red: #ff3d5a; --red-dim: rgba(255,61,90,0.12); --warn: #ffb300;
-  --txt: #c8d4e8; --txt2: #647080; --txt3: #384050;
-  --border: rgba(255,255,255,0.05); --border2: rgba(255,255,255,0.10);
-  --r: 12px; --r2: 16px; --r3: 20px;
-  --font-title: 'Orbitron', monospace; --font-body: 'Rajdhani', sans-serif; --font-mono: 'JetBrains Mono', monospace;
+:root{
+  --bg:#090b10;--bg2:#0f1219;--bg3:#161b25;--bg4:#1c2230;--bg5:#212840;
+  --accent:#00e676;--accent2:#00c853;--adr:rgba(0,230,118,.12);--adb:rgba(0,230,118,.28);
+  --text:#dde1ec;--text2:#7b8296;--text3:#464f63;
+  --danger:#ff5252;--warn:#ffb300;--blue:#40c4ff;--gold:#ffd740;--silver:#b0bec5;--bronze:#ff8a65;
+  --border:rgba(255,255,255,.06);--r:10px;--r2:14px;--r3:18px;
 }
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html, body { height: 100%; background: var(--void); color: var(--txt); font-family: var(--font-body); font-size: 15px; overflow: hidden; -webkit-font-smoothing: antialiased; }
-button { border:none; cursor:pointer; font-family:inherit; background:none; }
-input { font-family:inherit; }
-::-webkit-scrollbar { width:2px; } ::-webkit-scrollbar-thumb { background:var(--void3); border-radius:2px; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
+button{border:none;cursor:pointer;font-family:inherit}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+#app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;position:relative}
 
-body::before { content:''; position:fixed; inset:0; z-index:0; background: linear-gradient(rgba(0,230,118,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,230,118,0.025) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
-body::after { content:''; position:fixed; inset:0; z-index:0; background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,230,118,0.07) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 100% 100%, rgba(0,210,255,0.04) 0%, transparent 50%); pointer-events:none; }
+/* HEADER */
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 16px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;z-index:10}
+.logo{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:21px;letter-spacing:.5px;color:var(--accent)}
+.logo em{color:var(--text);font-style:normal}
+.header-right{display:flex;align-items:center;gap:8px}
+.online-pill{display:flex;align-items:center;gap:5px;background:var(--adr);border:1px solid var(--adb);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:500}
+.online-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.notif-btn{width:34px;height:34px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
+.notif-badge{position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--danger);border-radius:50%;border:1.5px solid var(--bg2)}
 
-#app { display: flex; flex-direction: column; height: 100dvh; max-width: 480px; margin: 0 auto; position: relative; z-index: 1; }
+/* CONTENT */
+.content{flex:1;overflow-y:auto;overflow-x:hidden}
+.page{display:none;padding:14px 14px 80px;animation:fadeIn .18s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
-/* ════════════════════════════════════════════════
-   HEADER & NAV
-════════════════════════════════════════════════ */
-.hdr { flex-shrink: 0; padding: 12px 16px 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: rgba(5,7,10,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); position: relative; z-index: 20; }
-.hdr::after { content:''; position:absolute; bottom:0; left:16px; right:16px; height:1px; background: linear-gradient(90deg, transparent, var(--green-glow), var(--blue-glow), transparent); }
-.logo { font-family: var(--font-title); font-size: 16px; font-weight: 700; letter-spacing: 1.5px; background: linear-gradient(135deg, var(--green) 0%, var(--blue) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.logo span { -webkit-text-fill-color: var(--txt2); }
-.hdr-right { display:flex; align-items:center; gap:8px; }
-.live-badge { display:flex; align-items:center; gap:5px; padding: 4px 10px; border-radius: 20px; background: var(--green-dim); border: 1px solid var(--green-mid); font-family: var(--font-mono); font-size: 10px; font-weight: 600; color: var(--green); letter-spacing: 0.5px; }
-.live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 1.6s ease-in-out infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+/* NAV */
+.nav{position:absolute;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);display:flex;padding:6px 0;padding-bottom:calc(6px + env(safe-area-inset-bottom));z-index:10}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 0;cursor:pointer;transition:background .15s}
+.nav-icon{font-size:20px;line-height:1;filter:grayscale(1);opacity:.45;transition:all .15s}
+.nav-lbl{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);transition:color .15s}
+.nav-item.active .nav-icon{filter:none;opacity:1}
+.nav-item.active .nav-lbl{color:var(--accent)}
 
-.nav { flex-shrink: 0; display: flex; background: rgba(5,7,10,0.92); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-top: 1px solid var(--border); padding: 8px 0; padding-bottom: calc(8px + env(safe-area-inset-bottom)); position: relative; z-index: 20; }
-.nav::before { content:''; position:absolute; top:0; left:10%; right:10%; height:1px; background: linear-gradient(90deg, transparent, var(--green-glow), transparent); }
-.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 0; cursor: pointer; transition: transform 0.15s; position: relative; }
-.nav-item:active { transform: scale(0.93); }
-.nav-ico { font-size: 19px; line-height: 1; filter: grayscale(1) opacity(0.35); transition: all 0.2s; }
-.nav-lbl { font-family: var(--font-title); font-size: 7px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--txt3); transition: color 0.2s; }
-.nav-item.active .nav-ico { filter: none; opacity:1; }
-.nav-item.active .nav-lbl { color: var(--green); }
-.nav-item.active::after { content:''; position:absolute; top: -8px; left: 50%; transform:translateX(-50%); width: 24px; height:2px; border-radius: 2px; background: linear-gradient(90deg, var(--green), var(--blue)); box-shadow: 0 0 8px var(--green-glow); }
+/* LABELS */
+.section-lbl{font-size:10px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:var(--text3);margin:16px 0 8px}
+.section-lbl:first-child{margin-top:0}
 
-/* ════════════════════════════════════════════════
-   PAGES & COMPONENTS
-════════════════════════════════════════════════ */
-.content { flex:1; overflow-y:auto; overflow-x:hidden; position:relative; }
-.page { display: none; padding: 14px 14px 90px; min-height: 100%; position:absolute; inset:0; overflow-y: auto; overflow-x: hidden; }
-.page.active { display: block; animation: slideIn 0.22s cubic-bezier(0.25,0.46,0.45,0.94) both; }
-@keyframes slideIn { from { opacity:0; transform:translateX(16px); } to { opacity:1; transform:translateX(0); } }
-
-.sec-lbl { font-family: var(--font-title); font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--txt3); margin: 18px 0 10px; display: flex; align-items: center; gap: 8px; }
-.sec-lbl:first-child { margin-top: 0; }
-.sec-lbl::after { content:''; flex:1; height:1px; background: linear-gradient(90deg, var(--border2), transparent); }
-
-.sk { background: linear-gradient(90deg, var(--void3) 25%, rgba(28,36,52,0.8) 50%, var(--void3) 75%); background-size: 300% 100%; animation: shimmer 1.6s ease-in-out infinite; border-radius: var(--r); }
-@keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
-.sk-h { height: 76px; margin-bottom: 8px; border-radius: var(--r2); }
+/* SKELETON */
+.skeleton{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-card{height:72px;border-radius:var(--r2);margin-bottom:8px}
 
 /* SERVERS */
-.srv-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r2); padding: 12px 14px; margin-bottom: 8px; display:flex; align-items:center; gap:12px; transition: border-color 0.15s, background 0.15s; cursor: pointer; }
-.srv-card:active { background: var(--panel2); border-color:var(--green-mid); }
-.srv-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
-.srv-dot.online { background:var(--green); box-shadow:0 0 0 3px rgba(0,230,118,0.15); }
-.srv-dot.offline { background:var(--txt3); }
-.srv-dot.warn { background:var(--warn); box-shadow:0 0 0 3px rgba(255,179,0,0.15); }
-.srv-info { flex:1; min-width:0; }
-.srv-name-txt { font-family:var(--font-body); font-weight:700; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.srv-meta { display:flex; align-items:center; gap:8px; margin-top:2px; }
-.srv-map-txt { font-family:var(--font-mono); font-size:10px; color:var(--blue); }
-.srv-ip-txt { font-family:var(--font-mono); font-size:9px; color:var(--txt3); }
-.srv-right { flex-shrink:0; text-align:right; }
-.srv-cnt { font-family:var(--font-title); font-size:16px; font-weight:700; line-height:1; color:var(--txt); }
-.srv-cnt .slash { color:var(--txt3); font-size:12px; }
-.srv-mini-bar { width:44px; height:3px; background:rgba(255,255,255,0.06); border-radius:2px; margin-top:4px; overflow:hidden; }
-.srv-mini-fill { height:100%; border-radius:2px; background:var(--green); transition:width 0.6s ease; }
+.server-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s,background .15s}
+.server-card:active{background:var(--bg3);border-color:var(--adb)}
+.srv-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;transition:all .3s}
+.srv-dot.g{background:var(--accent);box-shadow:0 0 0 4px rgba(0,230,118,.15)}
+.srv-dot.y{background:var(--warn);box-shadow:0 0 0 4px rgba(255,179,0,.15)}
+.srv-dot.r{background:var(--text3);box-shadow:none}
+.srv-info{flex:1;min-width:0}
+.srv-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srv-meta{display:flex;align-items:center;gap:8px;margin-top:3px}
+.srv-map{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue)}
+.srv-ip{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)}
+.srv-right{flex-shrink:0;text-align:right}
+.srv-count{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:19px;line-height:1}
+.srv-max{font-size:13px;color:var(--text3);font-weight:400}
+.srv-bar{width:48px;height:3px;background:var(--bg4);border-radius:2px;margin-top:5px;overflow:hidden}
+.srv-fill{height:100%;border-radius:2px;transition:width .5s}
+.copy-hint{text-align:center;font-size:11px;color:var(--text3);padding:6px 0 0;display:flex;align-items:center;justify-content:center;gap:4px}
 
-/* TOP/STATS */
-.top-filters { display:flex; gap:6px; margin-bottom:14px; overflow-x:auto; padding-bottom:2px; }
-.top-filters::-webkit-scrollbar { display:none; }
-.top-flt { flex-shrink:0; padding:7px 14px; background:var(--glass); border:1px solid var(--border); border-radius:20px; font-family:var(--font-title); font-size:9px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:var(--txt3); cursor:pointer; transition:all 0.18s; white-space:nowrap; }
-.top-flt.active { background:var(--green-dim); border-color:var(--green-mid); color:var(--green); }
-.top-row { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--panel); border:1px solid var(--border); border-radius:var(--r2); margin-bottom:6px; transition:background 0.15s; }
-.tr-rank { font-family:var(--font-mono); font-size:12px; width:22px; flex-shrink:0; text-align:center; }
-.tr-rank.r1{color:var(--gold);} .tr-rank.r2{color:var(--silver);} .tr-rank.r3{color:var(--bronze);}
-.tr-avatar { width:34px; height:34px; border-radius:9px; background:var(--void3); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; font-family:var(--font-title); font-size:11px; font-weight:700; color:var(--txt2); flex-shrink:0; }
-.tr-name { flex:1; font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.tr-sub { font-size:10px; color:var(--txt3); margin-top:1px; }
-.tr-val { flex-shrink:0; text-align:right; }
-.tr-num { font-family:var(--font-title); font-size:16px; font-weight:700; color:var(--green); }
-.tr-lbl { font-family:var(--font-mono); font-size:9px; color:var(--txt3); margin-top:1px; }
-.search-input { width:100%; background:var(--panel); border:1px solid var(--border); border-radius:var(--r2); padding:10px 12px; color:var(--txt); font-family:var(--font-body); font-size:14px; outline:none; transition:border-color 0.15s; margin-bottom:12px; }
-.search-input:focus { border-color:var(--green-mid); }
+/* BUTTONS */
+.btn-primary{display:block;width:100%;background:var(--accent);color:var(--bg);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;letter-spacing:.4px;border-radius:var(--r2);padding:13px;margin-top:8px;transition:background .15s,transform .1s}
+.btn-primary:active{transform:scale(.98);background:var(--accent2)}
+.btn-outline{display:block;width:100%;background:transparent;color:var(--accent);border:1px solid var(--adb);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;border-radius:var(--r2);padding:11px;margin-top:8px;transition:background .15s}
+.btn-outline:active{background:var(--adr)}
 
-/* SHOP */
-.balance-hero { background: linear-gradient(135deg, rgba(0,230,118,0.07), rgba(0,210,255,0.04)); border: 1px solid var(--green-mid); border-radius: var(--r2); padding: 16px; margin-bottom: 12px; display:flex; align-items:center; justify-content:space-between; position:relative; overflow:hidden; }
-.balance-hero::after { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg, transparent, var(--green-glow), transparent); }
-.bal-label { font-family:var(--font-title); font-size:8px; font-weight:600; letter-spacing:1.5px; color:var(--txt3); text-transform:uppercase; }
-.bal-amount { font-family:var(--font-title); font-size:26px; font-weight:800; background:linear-gradient(135deg, var(--green), var(--blue)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1.1; margin-top:2px; }
-.bal-currency { font-family:var(--font-mono); font-size:11px; color:var(--txt2); margin-top:1px; }
-.btn-topup { background: var(--green-dim); border: 1px solid var(--green-mid); border-radius: var(--r); padding: 10px 14px; color: var(--green); font-family: var(--font-title); font-size: 10px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; transition:all 0.15s; white-space:nowrap; }
-.btn-topup:active { background:var(--green-mid); }
-
-.priv-card { background:var(--panel); border:1px solid var(--border); border-radius:var(--r2); padding:16px; margin-bottom:10px; position:relative; overflow:hidden; }
-.priv-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
-.priv-name { font-family:var(--font-title); font-size:15px; font-weight:700; letter-spacing:0.3px; margin-bottom:3px; color:var(--gold); }
-.priv-desc { font-size:12px; color:var(--txt2); line-height:1.5; margin-bottom:12px; }
-.priv-features { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:14px; }
-.priv-feat { background:var(--glass2); border:1px solid var(--border); border-radius:6px; padding:3px 8px; font-size:11px; color:var(--txt2); }
-.priv-bottom { display:flex; align-items:center; justify-content:space-between; }
-.priv-price { font-family:var(--font-title); font-size:18px; font-weight:800; color:var(--green); }
-.btn-buy { padding:10px 18px; border-radius:var(--r); font-family:var(--font-title); font-size:10px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; background:linear-gradient(135deg, var(--green), #00c853); color:var(--void); box-shadow: 0 3px 12px rgba(0,230,118,0.25); transition:all 0.15s; }
-.btn-buy:active { transform:scale(0.96); }
+/* TOP */
+.filter-row{display:flex;gap:6px;margin-bottom:12px}
+.filter-btn{flex:1;padding:7px 6px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;font-size:12px;font-weight:500;color:var(--text2);transition:all .15s}
+.filter-btn.active{background:var(--adr);border-color:var(--adb);color:var(--accent);font-weight:600}
+.top-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:12px}
+.top-rank{font-family:'JetBrains Mono',monospace;font-size:13px;width:26px;text-align:center;flex-shrink:0}
+.r1{color:var(--gold)}.r2{color:var(--silver)}.r3{color:var(--bronze)}.rn{color:var(--text3)}
+.top-ava{width:38px;height:38px;border-radius:10px;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;color:var(--text2);flex-shrink:0}
+.top-ava.gold{border-color:rgba(255,215,64,.5);color:var(--gold)}
+.top-info{flex:1;min-width:0}
+.top-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.top-val{text-align:right;flex-shrink:0}
+.top-num{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:19px;color:var(--accent);line-height:1}
+.top-lbl{font-size:10px;color:var(--text3);margin-top:1px}
 
 /* PROFILE */
-.founder-hero { position:relative; border-radius:var(--r3); padding:2px; margin-bottom:12px; background:linear-gradient(135deg, var(--gold), var(--green), var(--blue), var(--gold)); background-size:300% 300%; animation:founderGlow 3s ease infinite; }
-@keyframes founderGlow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-.founder-inner { background:var(--void2); border-radius:calc(var(--r3) - 2px); padding:20px; }
-.pf-top { display:flex; align-items:center; gap:14px; margin-bottom:18px; }
-.pf-ava { width:60px; height:60px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-family:var(--font-title); font-size:20px; font-weight:800; flex-shrink:0; background:linear-gradient(135deg, rgba(0,230,118,0.1), rgba(0,210,255,0.08)); border:2px solid var(--green-mid); color:var(--green); box-shadow:0 0 20px var(--green-dim); }
-.pf-name { font-family:var(--font-title); font-size:19px; font-weight:700; margin-bottom:3px; }
-.pf-handle { font-family:var(--font-mono); font-size:11px; color:var(--blue); }
-.pf-4grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-.pf-cell { background:var(--void3); border-radius:12px; padding:11px 13px; }
-.pf-lbl { font-family:var(--font-title); font-size:7px; letter-spacing:1.5px; text-transform:uppercase; color:var(--txt3); margin-bottom:4px; }
-.pf-val { font-family:var(--font-title); font-size:20px; font-weight:800; }
-.pf-val.g { color:var(--green); } .pf-val.b { color:var(--blue); } .pf-val.gold { color:var(--gold); }
+.profile-hero{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:18px;margin-bottom:12px}
+.p-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.p-ava{width:58px;height:58px;border-radius:14px;background:var(--bg3);border:2px solid var(--adb);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;color:var(--accent);flex-shrink:0}
+.p-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px}
+.p-steam{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);margin-top:3px}
+.rank-pill{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;margin-top:6px}
+.rank-pill.silver{background:rgba(176,190,197,.12);border:1px solid rgba(176,190,197,.3);color:var(--silver)}
+.rank-pill.gold{background:rgba(255,215,64,.12);border:1px solid rgba(255,215,64,.3);color:var(--gold)}
+.rank-pill.green{background:var(--adr);border:1px solid var(--adb);color:var(--accent)}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-box{background:var(--bg3);border-radius:10px;padding:10px 12px}
+.sbl{font-size:10px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase}
+.sbv{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;margin-top:2px}
+.sbv.g{color:var(--accent)}.sbv.b{color:var(--blue)}.sbv.y{color:var(--gold)}
 
-.steam-form { background:var(--panel); border:1px solid var(--border); border-radius:var(--r2); padding:14px; margin-bottom:10px; margin-top:12px;}
-.btn-outline { display:block; width:100%; background:transparent; color:var(--green); border:1px solid var(--green-mid); font-family:var(--font-title); font-weight:700; font-size:12px; border-radius:var(--r2); padding:11px; margin-top:8px; text-transform:uppercase; }
+/* SHOP */
+.balance-card{background:var(--bg3);border:1px solid var(--adb);border-radius:var(--r2);padding:16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.bal-lbl{font-size:10px;color:var(--text3);letter-spacing:1.2px;text-transform:uppercase}
+.bal-val{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:28px;color:var(--accent);line-height:1.1}
+.bal-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.topup-btn{background:var(--adr);border:1px solid var(--adb);border-radius:10px;padding:9px 14px;color:var(--accent);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;white-space:nowrap}
+.bonus-card{background:linear-gradient(135deg,#0f2218,#0a1a10);border:1px solid rgba(0,230,118,.2);border-radius:var(--r2);padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bonus-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px}
+.bonus-desc{font-size:12px;color:var(--text3);margin-top:2px}
+.bonus-amount{background:var(--adr);border:1px solid var(--adb);border-radius:8px;padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);font-weight:700;white-space:nowrap}
+.shop-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin-bottom:10px}
+.shop-card.vip{border-color:rgba(255,215,64,.18)}
+.shop-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.shop-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:18px}
+.shop-name.vip{color:var(--gold)}.shop-name.premium{color:var(--accent)}
+.shop-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.shop-price{text-align:right}
+.price-val{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;color:var(--accent)}
+.price-lbl{font-size:10px;color:var(--text3)}
+.perks{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.perk{background:var(--bg4);border-radius:6px;padding:3px 9px;font-size:11px;color:var(--text2)}
+
+/* PRIV */
+.priv-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.priv-icon{font-size:22px;flex-shrink:0}
+.priv-info{flex:1}
+.priv-name-txt{font-weight:600;font-size:14px}
+.priv-srv{font-size:11px;color:var(--text3);margin-top:1px}
+.priv-exp{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--warn);text-align:right;flex-shrink:0}
+
+/* STEAM FORM */
+.steam-form{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin-bottom:10px}
+.steam-form label{font-size:12px;color:var(--text3);display:block;margin-bottom:6px}
+.steam-input{width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:9px;padding:10px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color .15s}
+.steam-input:focus{border-color:var(--adb)}
+.steam-input::placeholder{color:var(--text3)}
+
+/* TOPUP FORM */
+.topup-form{background:var(--bg2);border:1px solid var(--adb);border-radius:var(--r2);padding:14px;margin-bottom:10px;display:none}
+.topup-form.show{display:block}
+.topup-input{width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:9px;padding:10px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:16px;outline:none;margin-bottom:6px;transition:border-color .15s}
+.topup-input:focus{border-color:var(--adb)}
+.topup-hint{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:40px 20px}
+.empty-icon{font-size:36px;margin-bottom:10px;opacity:.4}
+.empty-text{color:var(--text3);font-size:14px}
 
 /* TOAST */
-.toast { position:fixed; top:70px; left:50%; transform:translateX(-50%) translateY(-10px); background:var(--panel2); border:1px solid var(--border); border-radius:12px; padding:10px 18px; font-size:13px; font-weight:500; opacity:0; transition:all 0.25s; z-index:999; white-space:nowrap; pointer-events:none; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
-.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-.toast.ok { border-color:var(--green-mid); color:var(--green); }
-.toast.err { border-color:rgba(255,61,90,0.3); color:var(--red); }
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-10px);background:var(--bg4);border:1px solid var(--border);border-radius:12px;padding:10px 18px;font-size:14px;font-weight:500;opacity:0;transition:all .25s;z-index:999;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:var(--adb);color:var(--accent)}
+.toast.err{border-color:rgba(255,82,82,.3);color:var(--danger)}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:12px}
+.search-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 12px 10px 36px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .15s}
+.search-input:focus{border-color:var(--adb)}
+.search-input::placeholder{color:var(--text3)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.4}
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="hdr">
-    <div class="logo">FOR<span>GAMES</span>.UZ</div>
-    <div class="hdr-right">
-      <div class="live-badge"><div class="live-dot"></div><span id="online-count">...</span></div>
+  <div class="header">
+    <div class="logo">FOR<em>GAMES</em>.UZ</div>
+    <div class="header-right">
+      <div class="online-pill"><div class="online-dot"></div><span id="online-count">...</span></div>
+      <div class="notif-btn"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1a5 5 0 0 0-5 5v3L1.5 11h13L13 9V6a5 5 0 0 0-5-5zM6.5 14a1.5 1.5 0 0 0 3 0" fill="#7b8296"/></svg></div>
     </div>
   </div>
 
   <div class="content">
-    
+    <!-- СЕРВЕРЫ -->
     <div class="page active" id="page-servers">
-      <div class="sec-lbl">Игровые Серверы</div>
+      <div class="section-lbl">ClanWar Серверы</div>
       <div id="servers-list">
-        <div class="sk sk-h"></div><div class="sk sk-h"></div><div class="sk sk-h"></div>
+        <div class="skeleton sk-card"></div><div class="skeleton sk-card"></div><div class="skeleton sk-card"></div>
       </div>
-      <div style="text-align:center;font-size:11px;color:var(--txt3);margin-top:10px;">👆 Нажми на сервер, чтобы скопировать IP</div>
+      <div class="copy-hint">👆 Нажми на сервер чтобы скопировать IP</div>
     </div>
 
+    <!-- ТОП -->
     <div class="page" id="page-top">
-      <div class="sec-lbl">Рейтинг игроков</div>
-      <input class="search-input" id="search-inp" placeholder="Поиск по нику..." oninput="searchPlayers(this.value)">
-      <div class="top-filters">
-        <button class="top-flt active" data-sort="kills" onclick="setSort(this)">Kills</button>
-        <button class="top-flt" data-sort="kd" onclick="setSort(this)">K/D</button>
-        <button class="top-flt" data-sort="wins" onclick="setSort(this)">Wins</button>
-        <button class="top-flt" data-sort="headshots" onclick="setSort(this)">Headshots</button>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" id="search-inp" placeholder="Поиск по нику..." oninput="searchPlayers(this.value)">
       </div>
-      <div id="top-list">
-        <div class="sk sk-h"></div><div class="sk sk-h"></div><div class="sk sk-h"></div>
+      <div class="filter-row">
+        <button class="filter-btn active" data-sort="kills" onclick="setSort(this)">Kills</button>
+        <button class="filter-btn" data-sort="kd" onclick="setSort(this)">K/D</button>
+        <button class="filter-btn" data-sort="wins" onclick="setSort(this)">Wins</button>
+        <button class="filter-btn" data-sort="headshots" onclick="setSort(this)">HS</button>
       </div>
+      <div id="top-list"><div class="skeleton sk-card"></div><div class="skeleton sk-card"></div><div class="skeleton sk-card"></div></div>
     </div>
 
+    <!-- МАГАЗИН -->
     <div class="page" id="page-shop">
-      <div class="balance-hero">
-        <div class="bal-left">
-          <div class="bal-label">Твой баланс</div>
-          <div class="bal-amount" id="shop-balance">...</div>
-          <div class="bal-currency">UZS</div>
+      <div class="balance-card">
+        <div>
+          <div class="bal-lbl">Баланс</div>
+          <div class="bal-val" id="shop-balance">… UZS</div>
+          <div class="bal-sub">Пополнение через скриншот</div>
         </div>
-        <button class="btn-topup" onclick="alert('Для пополнения напишите администратору @coder2406')">+ Пополнить</button>
+        <button class="topup-btn" onclick="toggleTopup()">+ Пополнить</button>
       </div>
-      <div class="sec-lbl">Привилегии</div>
-      <div id="shop-items">
-        <div class="sk sk-h"></div><div class="sk sk-h"></div>
+
+      <div class="topup-form" id="topup-form">
+        <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:6px">Сумма пополнения (UZS)</label>
+        <input class="topup-input" id="topup-amount" type="number" placeholder="50000" min="1000">
+        <div class="topup-hint">💡 После оплаты — отправь скриншот, баланс зачислим вручную</div>
+        <button class="btn-primary" onclick="submitTopup()">Отправить заявку</button>
       </div>
+
+      <div id="bonus-block"></div>
+
+      <div class="section-lbl">Привилегии</div>
+      <div id="shop-items"><div class="skeleton sk-card"></div><div class="skeleton sk-card"></div></div>
     </div>
 
+    <!-- ПРОФИЛЬ -->
     <div class="page" id="page-profile">
       <div id="profile-content">
-        <div class="sk" style="height:220px; border-radius:20px; margin-bottom:12px;"></div>
-        <div class="sk sk-h"></div>
+        <div class="skeleton" style="height:210px;border-radius:18px;margin-bottom:12px"></div>
+        <div class="skeleton sk-card"></div>
       </div>
     </div>
-
   </div>
 
   <div class="nav">
     <div class="nav-item active" onclick="showPage('servers')">
-      <div class="nav-ico">🖥️</div><div class="nav-lbl">Серверы</div>
+      <div class="nav-icon">🖥️</div><div class="nav-lbl">Серверы</div>
     </div>
     <div class="nav-item" onclick="showPage('top')">
-      <div class="nav-ico">🏆</div><div class="nav-lbl">Топ</div>
+      <div class="nav-icon">🏆</div><div class="nav-lbl">Топ</div>
     </div>
     <div class="nav-item" onclick="showPage('shop')">
-      <div class="nav-ico">🛒</div><div class="nav-lbl">Магазин</div>
+      <div class="nav-icon">🛒</div><div class="nav-lbl">Магазин</div>
     </div>
     <div class="nav-item" onclick="showPage('profile')">
-      <div class="nav-ico">👤</div><div class="nav-lbl">Профиль</div>
+      <div class="nav-icon">👤</div><div class="nav-lbl">Профиль</div>
     </div>
   </div>
 </div>
@@ -230,59 +261,54 @@ body::after { content:''; position:fixed; inset:0; z-index:0; background: radial
 <div class="toast" id="toast"></div>
 
 <script>
-// ════════════════════════════════════════════════
-// CORE JS LOGIC & API CONNECTION
-// ════════════════════════════════════════════════
-const API = 'https://api.forgames.uz'; // ТВОЙ РАБОЧИЙ API
-const tg = window.Telegram?.WebApp;
+// ── КОНФИГ ────────────────────────────────────────
+const API = 'https://api.forgames.uz';
+const tg  = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#0f1219'); }
 
-if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#05070a'); }
-
-let token = localStorage.getItem('fg_token');
+let token    = localStorage.getItem('fg_token');
 let userData = JSON.parse(localStorage.getItem('fg_user') || 'null');
 let currentSort = 'kills';
 
+// ── УТИЛИТЫ ──────────────────────────────────────
 const $ = id => document.getElementById(id);
-const fmt = n => Number(n || 0).toLocaleString('ru-RU');
-const inits = s => (s || '??').slice(0, 2).toUpperCase();
-
-// Уведомления (Toasts)
 function toast(msg, type = 'ok', dur = 2800) {
   const el = $('toast');
   el.textContent = msg;
   el.className = 'toast ' + type + ' show';
   setTimeout(() => el.classList.remove('show'), dur);
 }
-
-// Универсальный API Запрос
 async function api(path, opts = {}) {
-  const h = { 'Content-Type': 'application/json' };
+  const h = { 
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true' // <-- ДОБАВЬ ЭТУ СТРОКУ
+  };
   if (token) h['Authorization'] = 'Bearer ' + token;
-  const r = await fetch(API + (path.startsWith('/api') ? path : '/api' + path), { ...opt, headers });
+  const r = await fetch(API + path, { headers: h, ...opts });
   return r.json();
 }
+const fmt   = n => Number(n || 0).toLocaleString('ru-RU');
+const inits = s => (s || '??').slice(0, 2).toUpperCase();
 
-// Навигация
+// ── НАВИГАЦИЯ ─────────────────────────────────────
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  
   $('page-' + name)?.classList.add('active');
   const idx = ['servers','top','shop','profile'].indexOf(name);
   if (idx >= 0) document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
-  
   if (name === 'servers') loadServers();
-  if (name === 'top') loadTop(currentSort);
-  if (name === 'shop') loadShop();
+  if (name === 'top')     loadTop(currentSort);
+  if (name === 'shop')    loadShop();
   if (name === 'profile') loadProfile();
 }
 
-// Авторизация через Telegram
+// ── АВТОРИЗАЦИЯ ───────────────────────────────────
 async function auth() {
   let u = tg?.initDataUnsafe?.user;
-  if (!u) u = { id: 999, username: 'testuser', first_name: 'Игрок' }; // Фолбек для браузера
+  if (!u) u = { id: 999, username: 'testuser', first_name: 'Тест' };
   try {
-    const d = await api('/profile/auth', {
+    const d = await api('/api/profile/auth', {
       method: 'POST',
       body: JSON.stringify({ telegram_id: u.id, username: u.username, first_name: u.first_name })
     });
@@ -295,43 +321,41 @@ async function auth() {
   } catch(e) { console.warn('Auth error:', e); }
 }
 
-// ════════════════════════════════════════════════
-// MODULES RENDER
-// ════════════════════════════════════════════════
-
-// 1. Серверы
+// ── СЕРВЕРЫ ───────────────────────────────────────
 async function loadServers() {
   try {
-    const d = await api('/servers');
+    const d = await api('/api/servers');
     const el = $('servers-list');
     if (!d.success || !d.data?.length) {
-      el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--txt3);">Серверы недоступны</div>';
+      el.innerHTML = '<div class="empty-state"><div class="empty-icon">🖥️</div><div class="empty-text">Серверы временно недоступны</div></div>';
       return;
     }
     let total = 0;
     el.innerHTML = d.data.map(s => {
       total += s.players;
-      const pct = s.maxPlayers > 0 ? (s.players / s.maxPlayers) * 100 : 0;
-      const statusClass = !s.online ? 'offline' : pct >= 90 ? 'warn' : 'online';
-      
-      return `
-      <div class="srv-card" onclick="copyIp('${s.connect}')">
-        <div class="srv-dot ${statusClass}"></div>
+      const pct  = s.maxPlayers > 0 ? s.players / s.maxPlayers : 0;
+      const cls  = !s.online ? 'r' : pct >= 0.8 ? 'y' : 'g';
+      const clr  = cls === 'g' ? 'var(--accent)' : cls === 'y' ? 'var(--warn)' : 'var(--text3)';
+      const bclr = cls === 'y' ? 'var(--warn)' : 'var(--accent)';
+      return `<div class="server-card" onclick="copyIp('${s.connect}')">
+        <div class="srv-dot ${cls}"></div>
         <div class="srv-info">
-          <div class="srv-name-txt">${s.label || s.name}</div>
+          <div class="srv-name">ForGames.Uz | ${s.label}</div>
           <div class="srv-meta">
-            <span class="srv-map-txt">${s.map}</span>
-            <span class="srv-ip-txt">${s.connect}</span>
+            <span class="srv-map">${s.map}</span>
+            <span class="srv-ip">${s.connect}</span>
           </div>
         </div>
         <div class="srv-right">
-          <div class="srv-cnt">${s.players}<span class="slash">/</span>${s.maxPlayers}</div>
-          <div class="srv-mini-bar"><div class="srv-mini-fill" style="width:${Math.round(pct)}%"></div></div>
+          <div class="srv-count" style="color:${clr}">${s.players}<span class="srv-max">/${s.maxPlayers}</span></div>
+          <div class="srv-bar"><div class="srv-fill" style="width:${Math.round(pct*100)}%;background:${bclr}"></div></div>
         </div>
       </div>`;
     }).join('');
     $('online-count').textContent = total + ' online';
-  } catch(e) { $('servers-list').innerHTML = '<div style="text-align:center;padding:30px;color:var(--red);">Ошибка соединения</div>'; }
+  } catch(e) {
+    $('servers-list').innerHTML = '<div class="empty-state"><div class="empty-text">Ошибка соединения</div></div>';
+  }
 }
 
 function copyIp(ip) {
@@ -339,44 +363,45 @@ function copyIp(ip) {
   tg?.HapticFeedback?.impactOccurred('light');
 }
 
-// 2. Топ Игроков
+// ── ТОП ───────────────────────────────────────────
 async function loadTop(sort) {
   currentSort = sort;
   const el = $('top-list');
-  el.innerHTML = '<div class="sk sk-h"></div>'.repeat(5);
+  el.innerHTML = '<div class="skeleton sk-card"></div>'.repeat(5);
   try {
-    const d = await api('/players/top?sort=' + sort + '&limit=50');
-    if (!d.success || !d.data?.length) { el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--txt3);">Нет данных</div>'; return; }
+    const d = await api('/api/players/top?sort=' + sort + '&limit=50');
+    if (!d.success || !d.data?.length) {
+      el.innerHTML = '<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">Нет данных — статистика появится после игр</div></div>';
+      return;
+    }
     renderTop(d.data, sort);
-  } catch(e) { el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--red);">Ошибка загрузки</div>'; }
+  } catch(e) { el.innerHTML = '<div class="empty-state"><div class="empty-text">Ошибка загрузки</div></div>'; }
 }
 
 function renderTop(players, sort) {
   const el = $('top-list');
+  const medals = ['r1','r2','r3'];
   el.innerHTML = players.map((p, i) => {
-    const rk = i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : '';
+    const rk  = i < 3 ? medals[i] : 'rn';
     const num = i < 3 ? ['#1','#2','#3'][i] : `#${i+1}`;
-    let val = sort === 'kd' ? Number(p.kd||0).toFixed(2) : fmt(p[sort] || p.kills);
-    let lbl = sort === 'headshots' ? 'HS' : sort.toUpperCase();
-    
-    return `
-    <div class="top-row">
-      <div class="tr-rank ${rk}">${num}</div>
-      <div class="tr-avatar">${inits(p.name)}</div>
-      <div class="tr-name">
-        ${p.name}
-        <div class="tr-sub">${p.server_name || 'ForGames.Uz'}</div>
+    let val, lbl;
+    if (sort === 'kd')        { val = Number(p.kd||0).toFixed(2); lbl = 'K/D'; }
+    else if (sort === 'headshots') { val = fmt(p.headshots); lbl = 'HS'; }
+    else                      { val = fmt(p[sort] || p.kills); lbl = sort.toUpperCase(); }
+    return `<div class="top-card">
+      <div class="top-rank ${rk}">${num}</div>
+      <div class="top-ava ${i===0?'gold':''}">${inits(p.name)}</div>
+      <div class="top-info">
+        <div class="top-name">${p.name}</div>
+        <div class="top-sub">${p.server_name || 'ForGames.Uz'}</div>
       </div>
-      <div class="tr-val">
-        <div class="tr-num">${val}</div>
-        <div class="tr-lbl">${lbl}</div>
-      </div>
+      <div class="top-val"><div class="top-num">${val}</div><div class="top-lbl">${lbl}</div></div>
     </div>`;
   }).join('');
 }
 
 function setSort(el) {
-  document.querySelectorAll('.top-flt').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   loadTop(el.dataset.sort);
 }
@@ -387,101 +412,183 @@ async function searchPlayers(q) {
   if (q.length < 2) { loadTop(currentSort); return; }
   searchTimer = setTimeout(async () => {
     try {
-      const d = await api('/players/search?q=' + encodeURIComponent(q));
+      const d = await api('/api/players/search?q=' + encodeURIComponent(q));
       if (d.success && d.data.length) renderTop(d.data, currentSort);
-      else $('top-list').innerHTML = '<div style="text-align:center;padding:30px;color:var(--txt3);">Игрок не найден</div>';
+      else $('top-list').innerHTML = '<div class="empty-state"><div class="empty-text">Игрок не найден</div></div>';
     } catch(e) {}
   }, 400);
 }
 
-// 3. Магазин
+// ── МАГАЗИН ───────────────────────────────────────
 async function loadShop() {
   if (!token) await auth();
   try {
-    const prof = await api('/profile/me');
-    if (prof.success) $('shop-balance').textContent = fmt(prof.user.balance);
-    
-    const d = await api('/shop/items');
-    $('shop-items').innerHTML = d.data.map(item => `
-      <div class="priv-card">
-        <div class="priv-head">
-          <div class="priv-name ${item.type === 'vip' ? 'vip-txt' : ''}">${item.name}</div>
+    const prof = await api('/api/profile/me');
+    if (prof.success) {
+      $('shop-balance').textContent = fmt(prof.user.balance) + ' UZS';
+      const bb = $('bonus-block');
+      if (!prof.user.bonus_taken) {
+        bb.innerHTML = `<div class="bonus-card">
+          <div><div class="bonus-title">🎁 Стартовый бонус</div><div class="bonus-desc">Одноразовый подарок новым игрокам</div></div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+            <div class="bonus-amount">+10 000 UZS</div>
+            <button class="btn-primary" style="padding:7px 14px;font-size:13px;margin:0;border-radius:9px" onclick="claimBonus()">Получить</button>
+          </div>
+        </div>`;
+      } else {
+        bb.innerHTML = '';
+      }
+    }
+  } catch(e) {}
+
+  try {
+    const d = await api('/api/shop/items');
+    const el = $('shop-items');
+    el.innerHTML = d.data.map(item => `
+      <div class="shop-card ${item.type}">
+        <div class="shop-top">
+          <div>
+            <div class="shop-name ${item.type}">${item.name}</div>
+            <div class="shop-sub">${item.description}</div>
+          </div>
+          <div class="shop-price">
+            <div class="price-val">${fmt(item.price)}</div>
+            <div class="price-lbl">UZS</div>
+          </div>
         </div>
-        <div class="priv-desc">${item.description}</div>
-        <div class="priv-features">${item.perks.map(p => `<span class="priv-feat">${p}</span>`).join('')}</div>
-        <div class="priv-bottom">
-          <div class="priv-price">${fmt(item.price)} <span style="font-size:10px;color:var(--txt3)">UZS</span></div>
-          <button class="btn-buy" onclick="buyItem(${item.id}, '${item.name}', ${item.price})">Купить</button>
-        </div>
+        <div class="perks">${item.perks.map(p=>`<span class="perk">${p}</span>`).join('')}</div>
+        <button class="btn-primary" onclick="buyItem(${item.id},'${item.name}',${item.price})">Купить ${item.name}</button>
       </div>
     `).join('');
   } catch(e) {}
 }
 
-async function buyItem(id, name, price) {
-  if (!confirm(`Купить ${name} за ${fmt(price)} UZS?`)) return;
+function toggleTopup() {
+  const f = $('topup-form');
+  f.classList.toggle('show');
+  if (f.classList.contains('show')) $('topup-amount').focus();
+}
+
+async function submitTopup() {
+  const amount = parseInt($('topup-amount').value);
+  if (!amount || amount < 1000) return toast('Минимум 1 000 UZS', 'err');
   try {
-    const d = await api('/shop/buy', { method: 'POST', body: JSON.stringify({ item_id: id, server_id: 0 }) });
-    if (d.success) { toast('✅ Успешно!'); loadShop(); }
-    else toast('❌ ' + (d.error || 'Ошибка'), 'err');
+    const d = await api('/api/shop/topup', {
+      method: 'POST',
+      body: JSON.stringify({ amount, username: userData?.username || 'user' })
+    });
+    if (d.success) {
+      toast('✅ Заявка отправлена! Ожидай зачисления');
+      $('topup-form').classList.remove('show');
+      $('topup-amount').value = '';
+    } else {
+      toast('❌ ' + (d.error || 'Ошибка'), 'err');
+    }
   } catch(e) { toast('Ошибка соединения', 'err'); }
 }
 
-// 4. Профиль
+async function claimBonus() {
+  if (!token) await auth();
+  try {
+    const d = await api('/api/profile/bonus', { method: 'POST' });
+    if (d.success) { toast('🎉 +10,000 UZS зачислено!'); loadShop(); }
+    else toast('❌ ' + d.error, 'err');
+  } catch(e) { toast('Ошибка', 'err'); }
+}
+
+async function buyItem(id, name, price) {
+  if (!token) await auth();
+  const bal = parseInt($('shop-balance').textContent) || 0;
+  if (!confirm(`Купить ${name} за ${fmt(price)} UZS?`)) return;
+  try {
+    const d = await api('/api/shop/buy', { method: 'POST', body: JSON.stringify({ item_id: id, server_id: 0 }) });
+    if (d.success) {
+      toast('✅ ' + d.message);
+      tg?.HapticFeedback?.notificationOccurred('success');
+      loadShop();
+    } else {
+      toast('❌ ' + (d.error || 'Ошибка'), 'err');
+    }
+  } catch(e) { toast('Ошибка соединения', 'err'); }
+}
+
+// ── ПРОФИЛЬ ───────────────────────────────────────
 async function loadProfile() {
   if (!token) await auth();
   const el = $('profile-content');
   try {
-    const d = await api('/profile/me');
-    if (!d.success) return;
-    const u = d.user, s = d.stats || {};
-    
+    const d = await api('/api/profile/me');
+    if (!d.success) { el.innerHTML = '<div class="empty-state"><div class="empty-text">Ошибка загрузки</div></div>'; return; }
+    const u = d.user, s = d.stats || {}, privs = d.privileges || [];
+    const rankClass = ['Золото','Мастер'].includes(u.rank) ? 'gold' : ['Новичок'].includes(u.rank) ? 'green' : 'silver';
+
     el.innerHTML = `
-      <div class="founder-hero">
-        <div class="founder-inner">
-          <div class="pf-top">
-            <div class="pf-ava">${inits(u.first_name || u.username)}</div>
-            <div>
-              <div class="pf-name">${u.first_name || u.username || 'Игрок'}</div>
-              <div class="pf-handle">${u.steam_id ? 'Steam: ' + u.steam_id : 'Steam не привязан'}</div>
-            </div>
-          </div>
-          <div class="pf-4grid">
-            <div class="pf-cell"><div class="pf-lbl">Убийства</div><div class="pf-val g">${fmt(s.total_kills)}</div></div>
-            <div class="pf-cell"><div class="pf-lbl">K/D</div><div class="pf-val b">${Number(s.kd||0).toFixed(2)}</div></div>
-            <div class="pf-cell"><div class="pf-lbl">Победы</div><div class="pf-val g">${fmt(s.total_wins)}</div></div>
-            <div class="pf-cell"><div class="pf-lbl">Хедшоты</div><div class="pf-val gold">${fmt(s.total_hs)}</div></div>
+      <div class="profile-hero">
+        <div class="p-head">
+          <div class="p-ava">${inits(u.first_name || u.username)}</div>
+          <div>
+            <div class="p-name">${u.first_name || u.username || 'Игрок'}</div>
+            ${u.steam_id ? `<div class="p-steam">${u.steam_id}</div>` : '<div class="p-steam" style="color:var(--text3)">Steam не привязан</div>'}
+            <div class="rank-pill ${rankClass}">⭐ ${u.rank}</div>
           </div>
         </div>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="sbl">Убийства</div><div class="sbv g">${fmt(s.total_kills)}</div></div>
+          <div class="stat-box"><div class="sbl">K/D</div><div class="sbv b">${Number(s.kd||0).toFixed(2)}</div></div>
+          <div class="stat-box"><div class="sbl">Победы</div><div class="sbv g">${fmt(s.total_wins)}</div></div>
+          <div class="stat-box"><div class="sbl">Хедшоты</div><div class="sbv y">${fmt(s.total_hs)}</div></div>
+        </div>
       </div>
-      
-      ${!u.steam_id ? `
-      <div class="steam-form">
-        <label style="font-size:12px;color:var(--txt3);display:block;margin-bottom:8px;">Привяжи Steam ID для статистики</label>
-        <input class="search-input" id="steam-inp" placeholder="STEAM_0:1:12345678" style="margin-bottom:0;">
-        <button class="btn-outline" onclick="linkSteam()">🔗 Привязать Steam</button>
+
+      <div class="balance-card">
+        <div>
+          <div class="bal-lbl">Баланс</div>
+          <div class="bal-val">${fmt(u.balance)} UZS</div>
+        </div>
+        <button class="topup-btn" onclick="showPage('shop')">В магазин →</button>
+      </div>
+
+      ${!u.steam_id ? `<div class="steam-form">
+        <label>Привяжи Steam ID для отображения статистики</label>
+        <input class="steam-input" id="steam-inp" placeholder="STEAM_0:1:12345678">
+        <button class="btn-outline" style="margin-top:8px" onclick="linkSteam()">🔗 Привязать Steam</button>
       </div>` : ''}
+
+      <div class="section-lbl">Мои привилегии</div>
+      ${privs.length ? privs.map(p => {
+        const days = Math.ceil((new Date(p.expires_at) - Date.now()) / 86400000);
+        return `<div class="priv-card">
+          <div class="priv-icon">${p.type==='vip'?'⭐':'💎'}</div>
+          <div class="priv-info">
+            <div class="priv-name-txt">${p.name}</div>
+            <div class="priv-srv">${p.server_name||'Все серверы'}</div>
+          </div>
+          <div class="priv-exp">${days} дн.</div>
+        </div>`;
+      }).join('') : '<div class="empty-state"><div class="empty-icon">🔑</div><div class="empty-text">Нет активных привилегий</div></div>'}
     `;
-  } catch(e) { el.innerHTML = '<div style="text-align:center;color:var(--red);">Ошибка соединения</div>'; }
+  } catch(e) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-text">Ошибка соединения с сервером</div></div>';
+  }
 }
 
 async function linkSteam() {
   const v = $('steam-inp')?.value.trim();
   if (!v) return toast('Введи Steam ID', 'err');
   try {
-    const d = await api('/profile/steam', { method:'POST', body: JSON.stringify({ steam_id: v }) });
+    const d = await api('/api/profile/steam', { method:'POST', body: JSON.stringify({ steam_id: v }) });
     if (d.success) { toast('✅ Steam привязан!'); loadProfile(); }
     else toast('❌ ' + d.error, 'err');
   } catch(e) { toast('Ошибка', 'err'); }
 }
 
-// Запуск приложения
+// ── СТАРТ ─────────────────────────────────────────
 (async () => {
   await auth();
-  showPage('servers'); // Открываем страницу серверов при запуске
+  loadServers();
   setInterval(() => {
-    if ($('page-servers').classList.contains('active')) loadServers();
-  }, 30000); // Автообновление онлайна каждые 30 секунд
+    if ($('page-servers')?.classList.contains('active')) loadServers();
+  }, 30000);
 })();
 </script>
 </body>
