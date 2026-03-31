@@ -233,7 +233,7 @@ body::after { content:''; position:fixed; inset:0; z-index:0; background: radial
 // ════════════════════════════════════════════════
 // CORE JS LOGIC & API CONNECTION
 // ════════════════════════════════════════════════
-const API = 'https://api.forgames.uz/api'; // ТВОЙ РАБОЧИЙ API
+const API = 'https://api.forgames.uz'; // ТВОЙ РАБОЧИЙ API
 const tg = window.Telegram?.WebApp;
 
 if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#05070a'); }
@@ -258,7 +258,7 @@ function toast(msg, type = 'ok', dur = 2800) {
 async function api(path, opts = {}) {
   const h = { 'Content-Type': 'application/json' };
   if (token) h['Authorization'] = 'Bearer ' + token;
-  const r = await fetch(API + path, { headers: h, ...opts });
+  const r = await fetch(API + (path.startsWith('/api') ? path : '/api' + path), { ...opt, headers });
   return r.json();
 }
 
