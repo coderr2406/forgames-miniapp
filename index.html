@@ -1033,22 +1033,112 @@ body::after {
       <div class="credits"><div class="credits-txt">Core Engine by <a href="https://t.me/coder2406">@coder2406</a></div></div>
     </div>
 
-    <!-- ── STATS ── -->
-    <div class="page" id="page-stats">
-      <div class="stats-search">
-        <span class="search-ico">🔍</span>
-        <input class="stats-input" id="stats-nick" placeholder="Введи Steam ID или ник..." onkeydown="if(event.key==='Enter')searchStats()">
-        <button class="btn-search" onclick="searchStats()">НАЙТИ</button>
-      </div>
-      <div id="stats-content">
+   /* ═══════════════════════════════════════════════
+    STATS SEARCH & RENDER (FINAL)
+═══════════════════════════════════════════════ */
+
+async function searchStats() {
+  haptic('medium');
+  const nick = $('stats-nick').value.trim();
+  
+  if (!nick) { 
+    showToast('Введи Steam ID или ник', 'err'); 
+    return; 
+  }
+
+  const el = $('stats-content');
+  // Скелетон-загрузка
+  el.innerHTML = `
+    <div class="sk sk-h" style="height:200px;border-radius:20px;margin-bottom:10px;"></div>
+    <div class="sk sk-h2"></div><div class="sk sk-h2"></div>`;
+
+  try {
+    if (!token) await auth();
+    
+    // ВАЖНО: используем параметр "q", чтобы бэкенд искал и по нику, и по ID
+    const d = await apiCall(`/api/stats/player?q=${encodeURIComponent(nick)}`);
+
+    // ВАЖНО: данные теперь приходят в d.data
+    if (d.success && d.data) {
+      renderPlayerCard(el, d.data);
+    } else {
+      el.innerHTML = `
         <div class="empty">
-          <div class="empty-ico">🎮</div>
-          <div class="empty-txt">Найди своего игрока</div>
+          <div class="empty-ico">🔍</div>
+          <div class="empty-txt">Игрок "${nick}" не найден</div>
+        </div>`;
+    }
+  } catch(e) {
+    console.error("Search Error:", e);
+    el.innerHTML = `<div class="empty"><div class="empty-ico">⚠️</div><div class="empty-txt">Ошибка связи с сервером</div></div>`;
+  }
+}
+
+function renderPlayerCard(el, p) {
+  // Вытаскиваем данные из объекта p (бэкенд шлет их напрямую)
+  const kills = p.kills || 0;
+  const deaths = p.deaths || 0;
+  const kd = p.kd || (deaths > 0 ? (kills / deaths).toFixed(2) : kills.toFixed(2));
+  const hs = p.headshots || 0;
+  const wins = p.wins || 0;
+  const skill = p.skill || 0;
+  const rank = p.rank || 'Новичок';
+
+  // Логика прогресс-бара ранга (1000 очков на каждый ранг)
+  const ranks = ['Новичок', 'Боец', 'Ветеран', 'Элита', 'Легенда'];
+  const ri = ranks.indexOf(rank);
+  const nextRankSkill = (ri + 1) * 1000;
+  const curRankSkill = ri * 1000;
+  const pct = Math.min(100, Math.round(((skill - curRankSkill) / 1000) * 100));
+
+  // Цвета для рангов
+  const rankMap = { 
+    'Новичок': 'rk-novice', 'Боец': 'rk-fighter', 
+    'Ветеран': 'rk-veteran', 'Элита': 'rk-elite', 'Легенда': 'rk-legend' 
+  };
+
+  el.innerHTML = `
+    <div class="player-hero">
+      <div class="ph-top">
+        <div class="ph-avatar">${inits(p.username || '?')}</div>
+        <div>
+          <div class="ph-name">${p.username || 'Unknown'}</div>
+          <div class="ph-steam">${p.steam_id || 'ID не привязан'}</div>
+          <div class="rank-badge ${rankMap[rank]}">★ ${rank}</div>
         </div>
       </div>
-      <div class="credits"><div class="credits-txt">Core Engine by <a href="https://t.me/coder2406">@coder2406</a></div></div>
+      <div class="stats-4grid">
+        <div class="stat-cell"><div class="sc-lbl">Убийства</div><div class="sc-val g">${fmt(kills)}</div></div>
+        <div class="stat-cell"><div class="sc-lbl">Смерти</div><div class="sc-val red">${fmt(deaths)}</div></div>
+        <div class="stat-cell"><div class="sc-lbl">K/D Ratio</div><div class="sc-val b">${kd}</div></div>
+        <div class="stat-cell"><div class="sc-lbl">Хедшоты</div><div class="sc-val gold">${fmt(hs)}</div></div>
+      </div>
+      <div class="rank-progress" style="margin-top:14px">
+        <div class="rp-label">
+          <span class="rp-current">⬆️ До ${ranks[ri+1] || 'MAX'}</span>
+          <span class="rp-next">Skill: ${fmt(skill)}</span>
+        </div>
+        <div class="rp-bar"><div class="rp-fill" id="rp-fill" style="width:0%"></div></div>
+        <div class="rp-pct">${pct}%</div>
+      </div>
     </div>
+    
+    <div class="sec-lbl">Детальная статистика</div>
+    <div class="skill-card">
+      <div class="skill-ico">🏆</div>
+      <div class="skill-info">
+        <div class="skill-name">Победы</div>
+        <div class="skill-val" style="color:var(--green)">${fmt(wins)}</div>
+      </div>
+    </div>
+  `;
 
+  // Анимация полоски
+  setTimeout(() => {
+    const rf = $('rp-fill');
+    if (rf) rf.style.width = pct + '%';
+  }, 100);
+}
     <!-- ── TOP ── -->
     <div class="page" id="page-top">
       <div class="top-filters">
