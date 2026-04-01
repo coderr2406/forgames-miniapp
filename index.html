@@ -464,13 +464,79 @@ let state = {
 
 /* SHOP DATA ARRAYS */
 const PUBLIC_ITEMS = [
-    { id:'pub_vip', tier:'vip', name:'VIP Privilege', server:'Public Server #1', duration:'30 дней', price:50000, desc:'Приоритет слота, смена ника, цветной чат, иммунитет от бана голосованием.', features:['Приоритет слота','Цветной чат','Смена ника','Иммунитет кика'] },
-    { id:'pub_premium', tier:'premium', name:'PREMIUM Privilege', server:'Public Server #1', duration:'30 дней', price:80000, desc:'Всё из VIP + доступ к закрытым режимам, ускорение прокачки x2, уникальный тег.', features:['Всё из VIP','Тег [PREMIUM]','x2 опыт','Закрытые режимы'] },
-    { id:'pub_elite', tier:'vip', name:'ELITE Bundle', server:'Public Server #1', duration:'90 дней', price:100000, desc:'Максимальный пакет на 3 месяца. PREMIUM привилегии + индивидуальный скин и звание.', features:['90 дней','Кастом скин','Личное звание','24/7 поддержка'] }
+    { 
+        id: 'pub_admin_gold', 
+        tier: 'premium', 
+        name: 'Admin Gold', 
+        server: 'Public Server', 
+        duration: '30 дней', 
+        price: 100000, 
+        desc: 'Полный доступ + Gold привилегии. Максимальный контроль.', 
+        features: ['Full Admin', 'Gold Tag', 'Reserved Slot', 'Skin Access'] 
+    },
+    { 
+        id: 'pub_premium', 
+        tier: 'premium', 
+        name: 'Premium', 
+        server: 'Public Server', 
+        duration: '30 дней', 
+        price: 60000, 
+        desc: 'Максимальные игровые возможности для профи.', 
+        features: ['Premium Tag', 'x2 Exp', 'Extra Skins', 'Votemap'] 
+    },
+    { 
+        id: 'pub_goldvip', 
+        tier: 'vip', 
+        name: 'GoldVIP', 
+        server: 'Public Server', 
+        duration: '30 дней', 
+        price: 40000, 
+        desc: 'Продвинутый VIP статус с золотым свечением.', 
+        features: ['Gold VIP Tag', 'Heal per kill', 'Neon Skin'] 
+    },
+    { 
+        id: 'pub_vip', 
+        tier: 'vip', 
+        name: 'VIP', 
+        server: 'Public Server', 
+        duration: '30 дней', 
+        price: 20000, 
+        desc: 'Базовый набор привилегий для комфортной игры.', 
+        features: ['VIP Tag', 'Armor spawn', 'Weapon Menu'] 
+    },
+    { 
+        id: 'pub_free', 
+        tier: 'free', 
+        name: 'Free Status', 
+        server: 'Public Server', 
+        duration: 'Forever', 
+        price: 0, 
+        desc: 'Бесплатный статус для всех игроков.', 
+        features: ['Standard Tag', 'Basic Access'] 
+    }
 ];
+
 const CW_ITEMS = [
-    { id:'cw_vip', tier:'vip', name:'CW VIP', server:'ClanWar серверы x7', duration:'30 дней', price:50000, desc:'Участвуй в CW матчах с VIP статусом на всех 7 серверах.', features:['Все 7 CW серверов','Приоритет слота','VIP тег'] },
-    { id:'cw_premium', tier:'premium', name:'CW PREMIUM', server:'ClanWar серверы x7', duration:'30 дней', price:80000, desc:'Максимальный доступ для CW. Командные слоты, организация турниров.', features:['Все 7 серверов','Тег [CW PRO]','Личный сервер','Турнирный доступ'] }
+    { 
+        id: 'cw_admin', 
+        tier: 'premium', 
+        name: 'Administrator', 
+        server: 'ClanWar Servers', 
+        duration: '30 дней', 
+        price: 100000, 
+        desc: 'Полное управление всеми CW серверами.', 
+        features: ['Full Access', 'Server Config', 'Global Admin'] 
+    },
+    { 
+        id: 'cw_moderator', 
+        tier: 'premium', 
+        name: 'Moderator', 
+        server: 'ClanWar Servers', 
+        duration: '30 дней', 
+        price: 80000, 
+        desc: 'Модерация и контроль честности матчей.', 
+        features: ['Kick/Ban', 'CW Control', 'Match Manage'] 
+    }
 ];
 
 // Utils
