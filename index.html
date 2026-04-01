@@ -1761,7 +1761,7 @@ function renderTop(players) {
   el.innerHTML = podHtml + restHtml;
 }
 /* ═══════════════════════════════════════════════
-   PROFILE
+    PROFILE (FIXED K/D RATIO)
 ═══════════════════════════════════════════════ */
 async function loadProfile() {
   const el = $('profile-content');
@@ -1770,7 +1770,7 @@ async function loadProfile() {
     <div class="sk sk-h" style="height:80px;border-radius:16px;margin-bottom:10px;"></div>`;
   try {
     if (!token) await auth();
-    // Используем fetch напрямую к /api/profile/me
+    
     const d = await fetch(`${API_BASE}/api/profile/me`, {
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
     }).then(r => r.json());
@@ -1780,7 +1780,12 @@ async function loadProfile() {
     const privs = d.privileges || [];
     const founder = isFounder(userData || u);
 
-    // Поле steam_id (с нижним подчёркиванием) — как в API
+    // РАСЧЕТ K/D НА ЛЕТУ
+    // Берем или kills, или total_kills (смотря что пришло), и делим на смерти
+    const k = Number(s.kills || s.total_kills || 0);
+    const deaths = Number(s.deaths || s.total_deaths || 0);
+    const calculatedKD = (k / Math.max(1, deaths)).toFixed(2);
+
     const hasSteam = !!u.steam_id;
 
     const founderBlock = founder ? `
@@ -1798,9 +1803,9 @@ async function loadProfile() {
             </div>
           </div>
           <div class="pf-4grid">
-            <div class="pf-cell"><div class="pf-lbl">Убийства</div><div class="pf-val g">${fmt(s.kills)}</div></div>
-            <div class="pf-cell"><div class="pf-lbl">K/D</div><div class="pf-val b">${Number(s.kd||0).toFixed(2)}</div></div>
-            <div class="pf-cell"><div class="pf-lbl">Победы</div><div class="pf-val g">${fmt(s.wins)}</div></div>
+            <div class="pf-cell"><div class="pf-lbl">Убийства</div><div class="pf-val g">${fmt(k)}</div></div>
+            <div class="pf-cell"><div class="pf-lbl">K/D</div><div class="pf-val b">${calculatedKD}</div></div>
+            <div class="pf-cell"><div class="pf-lbl">Победы</div><div class="pf-val g">${fmt(s.wins || s.total_wins || 0)}</div></div>
             <div class="pf-cell"><div class="pf-lbl">Баланс</div><div class="pf-val gold">${fmt(u.balance)}</div></div>
           </div>
         </div>
@@ -1815,9 +1820,9 @@ async function loadProfile() {
           </div>
         </div>
         <div class="pf-4grid">
-          <div class="pf-cell"><div class="pf-lbl">Убийства</div><div class="pf-val g">${fmt(s.total_kills)}</div></div>
-          <div class="pf-cell"><div class="pf-lbl">K/D</div><div class="pf-val b">${Number(s.kd||0).toFixed(2)}</div></div>
-          <div class="pf-cell"><div class="pf-lbl">Победы</div><div class="pf-val g">${fmt(s.total_wins)}</div></div>
+          <div class="pf-cell"><div class="pf-lbl">Убийства</div><div class="pf-val g">${fmt(k)}</div></div>
+          <div class="pf-cell"><div class="pf-lbl">K/D</div><div class="pf-val b">${calculatedKD}</div></div>
+          <div class="pf-cell"><div class="pf-lbl">Победы</div><div class="pf-val g">${fmt(s.wins || s.total_wins || 0)}</div></div>
           <div class="pf-cell"><div class="pf-lbl">Баланс</div><div class="pf-val gold">${fmt(u.balance)}</div></div>
         </div>
       </div>`;
@@ -1865,6 +1870,7 @@ async function loadProfile() {
     }
 
   } catch(e) {
+    console.error("Profile Load Error:", e);
     el.innerHTML = `<div class="empty"><div class="empty-ico">⚠️</div><div class="empty-txt">Ошибка загрузки профиля</div></div>`;
   }
 }
@@ -1878,18 +1884,16 @@ async function linkSteam() {
     else showToast('❌ ' + (d.error||'Ошибка'), 'err');
   } catch(e) { showToast('Ошибка', 'err'); }
 }
-
+   
 /* ═══════════════════════════════════════════════
-   ADMIN SYSTEM & STARTUP (UPDATED FOR OWNER)
+   ADMIN SYSTEM & STARTUP (UPDATED)
 ═══════════════════════════════════════════════ */
 
-// 1. Функции управления админкой
+const ADMIN_LIST = [7640508983, 7921959151]; // Твой и Владельца
+
 function openAdmin() {
     const myId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 0;
-    // Список ID с доступом к админке (Твой и Владельца)
-    const allowedIds = [7640508983, 7921959151]; // Добавь сюда второй ID, если он отличается
-
-    if (allowedIds.includes(Number(myId))) { 
+    if (ADMIN_LIST.includes(Number(myId))) { 
         document.getElementById('adm-modal').style.display = 'block';
     } else {
         showToast('Доступ запрещен', 'err');
@@ -1903,7 +1907,6 @@ function closeAdmin() {
 async function execGiveBalance() {
     const targetTgId = document.getElementById('inp-adm-tg').value;
     const amount = document.getElementById('inp-adm-sum').value;
-
     if (!targetTgId || !amount) return showToast('Заполни все поля!', 'err');
 
     try {
@@ -1913,36 +1916,30 @@ async function execGiveBalance() {
                 'Content-Type': 'application/json',
                 'x-admin-key': 'fg_adm_2024' 
             },
-            body: JSON.stringify({
-                telegram_id: targetTgId,
-                amount: parseInt(amount)
-            })
+            body: JSON.stringify({ telegram_id: targetTgId, amount: parseInt(amount) })
         });
-
         const res = await response.json();
-
         if (res.success) {
-            showToast('✅ Баланс успешно выдан!', 'info');
+            showToast('✅ Баланс выдан!', 'info');
             document.getElementById('inp-adm-sum').value = '';
             closeAdmin();
+            if (typeof auth === 'function') await auth(); // Обновляем баланс в приложении
             if (typeof renderProfile === 'function') renderProfile();
         } else {
-            showToast('❌ Ошибка: ' + (res.error || 'Отказ сервера'), 'err');
+            showToast('❌ Ошибка: ' + (res.error || 'Отказ'), 'err');
         }
     } catch (e) {
         showToast('⚠️ Ошибка соединения', 'err');
     }
 }
 
-// 2. Основной запуск приложения
+// Запуск приложения
 (async () => {
   await auth();
   
-  // Показываем шестеренку только админам
   const myId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
-  const allowedIds = [7640508983, 7640508983]; // Твой ID и ID владельца
-
-  if (allowedIds.includes(Number(myId))) {
+  // Показываем шестеренку обоим админам
+  if (ADMIN_LIST.includes(Number(myId))) {
       document.getElementById('adm-trigger').style.display = 'block';
   }
 
@@ -1956,29 +1953,3 @@ async function execGiveBalance() {
     }
   }, 30000);
 })();
-</script>
-
-<!-- 3. HTML элементы (в самом низу body) -->
-<div id="adm-trigger" style="display:none; position:fixed; bottom:85px; left:15px; z-index:999; opacity:0.15; font-size:24px; cursor:pointer;" onclick="openAdmin()">⚙️</div>
-
-<div id="adm-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(7,11,19,0.98); z-index:10000; padding:25px; box-sizing:border-box; backdrop-filter:blur(15px);">
-    <div style="font-family:var(--font-title); color:var(--blue); font-size:18px; font-weight:800; margin-bottom:20px; text-transform:uppercase;">Admin Control</div>
-    
-    <div style="background:var(--glass); border:1px solid var(--border); border-radius:var(--r2); padding:20px;">
-        <div style="margin-bottom:15px;">
-            <div style="font-size:10px; color:var(--txt3); margin-bottom:5px; text-transform:uppercase;">Telegram ID игрока</div>
-            <input type="number" id="inp-adm-tg" class="stats-input" placeholder="7640508983" style="margin:0; width:100%;">
-        </div>
-
-        <div style="margin-bottom:20px;">
-            <div style="font-size:10px; color:var(--txt3); margin-bottom:5px; text-transform:uppercase;">Сумма пополнения (UZS)</div>
-            <input type="number" id="inp-adm-sum" class="stats-input" placeholder="5000" style="margin:0; width:100%;">
-        </div>
-
-        <button class="btn-buy green-buy" style="width:100%; border:none; height:45px;" onclick="execGiveBalance()">ПОДТВЕРДИТЬ</button>
-        <button class="btn-buy red-buy" style="width:100%; margin-top:12px; height:45px;" onclick="closeAdmin()">ОТМЕНА</button>
-    </div>
-</div>
-
-</body>
-</html>
