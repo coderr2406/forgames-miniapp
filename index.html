@@ -1761,7 +1761,58 @@ function renderTop(players) {
   el.innerHTML = podHtml + restHtml;
 }
 /* ═══════════════════════════════════════════════
-    PROFILE (FIXED K/D RATIO)
+    NAVIGATION SYSTEM (ВОЗВРАЩАЕМ НА МЕСТО)
+═══════════════════════════════════════════════ */
+function navTo(pageId, el) {
+  if (typeof haptic === 'function') haptic('light');
+  
+  // Скрываем все страницы
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  
+  // Показываем нужную
+  const targetPage = document.getElementById(pageId);
+  if (targetPage) targetPage.style.display = 'block';
+  
+  // Обновляем активную иконку в меню
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  if (el) el.classList.add('active');
+  
+  // Определяем текущую страницу для логики
+  currentPage = pageId.replace('page-', '');
+
+  // Загружаем данные
+  if (currentPage === 'home') loadHome();
+  if (currentPage === 'shop') loadShop();
+  if (currentPage === 'profile') loadProfile();
+}
+
+/* ═══════════════════════════════════════════════
+    NAVIGATION SYSTEM (FIXED)
+═══════════════════════════════════════════════ */
+function navTo(pageId, el) {
+  if (typeof haptic === 'function') haptic('light');
+  
+  // Скрываем все страницы
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  
+  // Показываем нужную
+  const targetPage = document.getElementById(pageId);
+  if (targetPage) targetPage.style.display = 'block';
+  
+  // Обновляем активную иконку в меню
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  if (el) el.classList.add('active');
+  
+  currentPage = pageId.replace('page-', '');
+
+  // Загружаем данные в зависимости от страницы
+  if (currentPage === 'home') loadHome();
+  if (currentPage === 'shop') loadShop();
+  if (currentPage === 'profile') loadProfile();
+}
+
+/* ═══════════════════════════════════════════════
+    PROFILE (K/D 2.27 FIXED)
 ═══════════════════════════════════════════════ */
 async function loadProfile() {
   const el = $('profile-content');
@@ -1780,8 +1831,7 @@ async function loadProfile() {
     const privs = d.privileges || [];
     const founder = isFounder(userData || u);
 
-    // РАСЧЕТ K/D НА ЛЕТУ
-    // Берем или kills, или total_kills (смотря что пришло), и делим на смерти
+    // Расчет K/D на лету
     const k = Number(s.kills || s.total_kills || 0);
     const deaths = Number(s.deaths || s.total_deaths || 0);
     const calculatedKD = (k / Math.max(1, deaths)).toFixed(2);
@@ -1844,112 +1894,92 @@ async function loadProfile() {
            <div class="empty-txt">Нет активных привилегий</div>
          </div>`;
 
-    const steamBlock = !hasSteam ? `
-      <div class="card" style="margin-bottom:10px">
-        <div style="font-family:var(--font-title);font-size:10px;letter-spacing:1px;color:var(--txt3);margin-bottom:10px">ПРИВЯЗАТЬ STEAM ID</div>
-        <div class="topup-form">
-          <input id="steam-inp" placeholder="STEAM_0:1:12345678">
-          <button class="btn-primary" onclick="linkSteam()">🔗 ПРИВЯЗАТЬ</button>
-        </div>
-      </div>` : '';
-
     el.innerHTML = `
       ${founderBlock}
-      ${!founder ? '<div class="sec-lbl">Мои привилегии</div>' + privHtml : ''}
-      ${!founder ? steamBlock : ''}
+      <div class="sec-lbl">Мои привилегии</div>
+      ${privHtml}
       <div class="credits" style="margin-top:16px">
         <div class="credits-txt">Core Engine by <a href="https://t.me/coder2406">@coder2406</a></div>
       </div>`;
 
-    if (founder) {
-      const secLbl = document.createElement('div');
-      secLbl.className = 'sec-lbl'; secLbl.textContent = 'Мои привилегии';
-      el.appendChild(secLbl);
-      const privWrap = document.createElement('div'); privWrap.innerHTML = privHtml;
-      el.appendChild(privWrap);
-    }
-
   } catch(e) {
     console.error("Profile Load Error:", e);
-    el.innerHTML = `<div class="empty"><div class="empty-ico">⚠️</div><div class="empty-txt">Ошибка загрузки профиля</div></div>`;
+    el.innerHTML = `<div class="empty">⚠️ Ошибка загрузки</div>`;
   }
 }
 
-async function linkSteam() {
-  const v = $('steam-inp')?.value.trim();
-  if (!v) { showToast('Введи Steam ID', 'err'); return; }
-  try {
-    const d = await apiCall('/api/profile/steam', { method:'POST', body:JSON.stringify({ steam_id:v }) });
-    if (d.success) { showToast('✅ Steam привязан!', 'ok'); loadProfile(); }
-    else showToast('❌ ' + (d.error||'Ошибка'), 'err');
-  } catch(e) { showToast('Ошибка', 'err'); }
-}
-   
 /* ═══════════════════════════════════════════════
-   ADMIN SYSTEM & STARTUP (UPDATED)
+    ADMIN & STARTUP
 ═══════════════════════════════════════════════ */
-
-const ADMIN_LIST = [7640508983, 7921959151]; // Твой и Владельца
+const ADMIN_LIST = [7640508983, 7921959151];
 
 function openAdmin() {
-    const myId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 0;
-    if (ADMIN_LIST.includes(Number(myId))) { 
-        document.getElementById('adm-modal').style.display = 'block';
-    } else {
-        showToast('Доступ запрещен', 'err');
-    }
+  const myId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 0;
+  if (ADMIN_LIST.includes(Number(myId))) {
+    document.getElementById('adm-modal').style.display = 'block';
+  } else {
+    showToast('Доступ запрещен', 'err');
+  }
 }
 
 function closeAdmin() {
-    document.getElementById('adm-modal').style.display = 'none';
+  document.getElementById('adm-modal').style.display = 'none';
 }
 
 async function execGiveBalance() {
-    const targetTgId = document.getElementById('inp-adm-tg').value;
-    const amount = document.getElementById('inp-adm-sum').value;
-    if (!targetTgId || !amount) return showToast('Заполни все поля!', 'err');
+  const tid = document.getElementById('inp-adm-tg').value;
+  const amt = document.getElementById('inp-adm-sum').value;
+  if(!tid || !amt) return showToast('Заполни поля', 'err');
 
-    try {
-        const response = await fetch('https://api.forgames.uz/api/admin/balance', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-admin-key': 'fg_adm_2024' 
-            },
-            body: JSON.stringify({ telegram_id: targetTgId, amount: parseInt(amount) })
-        });
-        const res = await response.json();
-        if (res.success) {
-            showToast('✅ Баланс выдан!', 'info');
-            document.getElementById('inp-adm-sum').value = '';
-            closeAdmin();
-            if (typeof auth === 'function') await auth(); // Обновляем баланс в приложении
-            if (typeof renderProfile === 'function') renderProfile();
-        } else {
-            showToast('❌ Ошибка: ' + (res.error || 'Отказ'), 'err');
-        }
-    } catch (e) {
-        showToast('⚠️ Ошибка соединения', 'err');
+  try {
+    const response = await fetch('https://api.forgames.uz/api/admin/balance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': 'fg_adm_2024' },
+      body: JSON.stringify({ telegram_id: tid, amount: parseInt(amt) })
+    });
+    const res = await response.json();
+    if(res.success) { 
+      showToast('✅ Баланс выдан!', 'info'); 
+      closeAdmin(); 
+      await auth(); 
+      loadProfile(); 
+    } else {
+      showToast('❌ Ошибка: ' + (res.error || 'Отказ'), 'err');
     }
+  } catch (e) {
+    showToast('⚠️ Ошибка соединения', 'err');
+  }
 }
 
-// Запуск приложения
+// Запуск приложения (ОДИН РАЗ!)
 (async () => {
   await auth();
-  
   const myId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
-  // Показываем шестеренку обоим админам
   if (ADMIN_LIST.includes(Number(myId))) {
-      document.getElementById('adm-trigger').style.display = 'block';
+    const trigger = document.getElementById('adm-trigger');
+    if(trigger) trigger.style.display = 'block';
   }
-
   loadHome();
 
   setInterval(async () => {
-    if (currentPage === 'home') {
+    if (typeof currentPage !== 'undefined' && currentPage === 'home') {
       await fetchServers();
-      renderFlagship();
-      renderServerList();
+      if(typeof renderFlagship === 'function') renderFlagship();
+      if(typeof renderServerList === 'function') renderServerList();
     }
   }, 30000);
 })();
+</script>
+
+<div id="adm-trigger" style="display:none; position:fixed; bottom:85px; left:15px; z-index:999; opacity:0.15; font-size:24px; cursor:pointer;" onclick="openAdmin()">⚙️</div>
+
+<div id="adm-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(7,11,19,0.98); z-index:10000; padding:25px; box-sizing:border-box; backdrop-filter:blur(15px);">
+    <div style="color:var(--blue); font-weight:800; margin-bottom:20px;">ADMIN PANEL</div>
+    <input type="number" id="inp-adm-tg" class="stats-input" placeholder="TG ID получателя">
+    <input type="number" id="inp-adm-sum" class="stats-input" placeholder="Сумма (UZS)" style="margin-top:10px">
+    <button class="btn-buy green-buy" style="width:100%; margin-top:20px; height:45px;" onclick="execGiveBalance()">ПОДТВЕРДИТЬ ВЫДАЧУ</button>
+    <button class="btn-buy red-buy" style="width:100%; margin-top:10px; height:45px;" onclick="closeAdmin()">ЗАКРЫТЬ</button>
+</div>
+
+</body>
+</html>
