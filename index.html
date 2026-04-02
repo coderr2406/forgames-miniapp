@@ -1775,11 +1775,9 @@ body::after {
 
       <!-- TOURNAMENTS SUB-TAB -->
       <div class="cw-sub active" id="cwsub-tournaments">
-          <div class="sk sk-hero"></div>
-          <div class="sk sk-card"></div>
+        <div class="sk sk-hero"></div>
+        <div class="sk sk-card"></div>
 
-        <div class="tournament-card featured
-        
         <div class="tournament-card featured">
           <div class="tourn-header">
             <div class="tourn-type cup">⚔️ CUP</div>
@@ -1848,7 +1846,7 @@ body::after {
           </div>
           <button class="btn-register" style="opacity:0.4; cursor:not-allowed;" disabled>ЗАПИСЬ ЗАКРЫТА</button>
         </div>
-      </div>
+      </div><!-- /cwsub-tournaments -->
 
       <!-- MY TEAM SUB-TAB -->
       <div class="cw-sub" id="cwsub-myteam">
@@ -1906,10 +1904,10 @@ body::after {
           <div class="news-body">Напряженный четвертьфинал. Овертайм на de_dust2. NAVI побеждает 19:17.</div>
           <div class="news-date">1 Апр 2026</div>
         </div>
-      </div>
+      </div><!-- /cwsub-live -->
 
       <div class="credits"><div class="credits-txt">Core Engine by <a href="https://t.me/coder2406" onclick="openTg('https://t.me/coder2406')">@coder2406</a></div></div>
-    </div>
+    </div><!-- /page-clanwar -->
 
     <!-- PROFILE PAGE -->
     <div class="page" id="page-profile">
@@ -2186,13 +2184,11 @@ function showToast(message, type = 'ok', duration = 2800) {
   el.innerHTML = `<span>${icons[type] || '📢'}</span><span>${message}</span>`;
   wrap.appendChild(el);
 
-  // Auto remove
   const removeTimer = setTimeout(() => {
     el.classList.add('hiding');
     setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 350);
   }, duration);
 
-  // Tap to dismiss
   el.addEventListener('click', () => {
     clearTimeout(removeTimer);
     el.classList.add('hiding');
@@ -2224,7 +2220,6 @@ async function apiReq(path, options = {}, timeoutMs = 10000) {
     clearTimeout(timer);
 
     if (res.status === 401) {
-      // Token expired — re-auth
       state.token = null;
       await initAuth();
       return { success: false, error: 'Session expired, please retry' };
@@ -2252,7 +2247,6 @@ async function apiReq(path, options = {}, timeoutMs = 10000) {
    AUTHENTICATION MODULE
 ═══════════════════════════════════════════════════════════════ */
 async function initAuth() {
-  // Get TG user data (fallback for testing)
   const tgUser = tg?.initDataUnsafe?.user || {
     id: 7640508983,
     username: 'coder2406',
@@ -2294,7 +2288,6 @@ function showAuthGate(verifyCode) {
 
   gate.classList.add('visible');
 
-  // Poll for steam link
   let pollAttempts = 0;
   state.authPollTimer = setInterval(async () => {
     pollAttempts++;
@@ -2302,7 +2295,6 @@ function showAuthGate(verifyCode) {
 
     const res = await apiReq('/api/profile/me');
     if (res.user && res.user.steam_id) {
-      // Steam linked! Close gate
       clearInterval(state.authPollTimer);
       state.authPollTimer = null;
 
@@ -2318,7 +2310,6 @@ function showAuthGate(verifyCode) {
         gate.style.display = 'none';
       }, { once: true });
 
-      // Trigger full render of home
       renderHome();
     }
   }, AUTH_POLL_INTERVAL);
@@ -2349,7 +2340,6 @@ function navTo(page) {
   if (pageEl) pageEl.classList.add('active');
   if (navEl)  navEl.classList.add('active');
 
-  // Lazy-load page content
   const loaders = {
     home:     () => renderHome(),
     shop:     () => renderShop(),
@@ -2367,7 +2357,6 @@ function navTo(page) {
 async function renderHome() {
   const cont = $('home-content');
 
-  // Show skeletons
   cont.innerHTML = `
     <div class="sk sk-hero"></div>
     <div class="sk sk-list"></div>
@@ -2375,7 +2364,6 @@ async function renderHome() {
     <div class="sk sk-list" style="height:80px;"></div>
   `;
 
-  // Fetch servers and news in parallel
   const [sRes, nRes] = await Promise.allSettled([
     apiReq('/api/servers'),
     apiReq('/api/news/all')
@@ -2390,7 +2378,6 @@ async function renderHome() {
 
   let html = '';
 
-  // FLAGSHIP CARD
   if (flagship) {
     const pl  = Number(flagship.players ?? flagship.num_players ?? 0);
     const mx  = Number(flagship.maxplayers ?? flagship.max_players ?? 32);
@@ -2437,7 +2424,6 @@ async function renderHome() {
     `;
   }
 
-  // CW SERVERS
   html += `<div class="sec-lbl">CLANWAR СЕРВЕРЫ <span class="count-badge">${cwServers.length}</span></div>`;
 
   if (cwServers.length > 0) {
@@ -2473,7 +2459,6 @@ async function renderHome() {
     `;
   }
 
-  // NEWS SECTION
   html += `<div class="sec-lbl">НОВОСТИ ПРОЕКТА</div>`;
 
   const newsData = (nRes.status === 'fulfilled' && nRes.value?.success)
@@ -2498,7 +2483,6 @@ async function renderHome() {
       `;
     }).join('');
   } else {
-    // Fallback static news if API unavailable
     html += `
       <div class="news-card">
         <div class="news-type green">🚀 ОБНОВЛЕНИЕ</div>
@@ -2533,7 +2517,6 @@ function fastConnect() {
    SHOP MODULE
 ═══════════════════════════════════════════════════════════════ */
 async function renderShop() {
-  // Show balance skeleton
   $('shop-balance-block').innerHTML = `
     <div class="sk" style="height:96px; border-radius:var(--r-lg);"></div>
   `;
@@ -2542,14 +2525,12 @@ async function renderShop() {
     <div class="sk sk-card"></div>
   `;
 
-  // Fetch latest balance
   const res = await apiReq('/api/profile/me');
   if (res.user) {
     state.user = { ...state.user, ...res.user };
     state.shopBalance = Number(res.user.balance || 0);
   }
 
-  // Render balance card
   $('shop-balance-block').innerHTML = `
     <div class="balance-card">
       <div>
@@ -2699,7 +2680,6 @@ async function confirmBuy() {
   if (res.success) {
     hapticNotif('success');
 
-    // Deduct balance from DOM without reload
     state.shopBalance = Math.max(0, state.shopBalance - _buyModalPrice);
     const balEl = $('bal-display');
     if (balEl) {
@@ -2751,14 +2731,12 @@ function buildPlayerCard(user, stats, isSelf = false) {
   const kd    = fmtKD(kills, deaths);
   const hsPct = kills > 0 ? Math.round((hs / kills) * 100) : 0;
 
-  // Hit zones
   const hHead  = Number(s.hits_head     || 0);
   const hChest = Number(s.hits_chest    || 0);
   const hStom  = Number(s.hits_stomach  || 0);
   const hLegs  = Number(s.hits_legs     || 0);
   const totalHits = hHead + hChest + hStom + hLegs;
 
-  // Weapons
   const akK  = Number(s.kills_ak47 || 0);
   const m4K  = Number(s.kills_m4a1 || 0);
   const awpK = Number(s.kills_awp  || 0);
@@ -2766,10 +2744,8 @@ function buildPlayerCard(user, stats, isSelf = false) {
 
   const founderCheck = isSelf && isFounder(u);
 
-  // Avatar
   const avaClass = founderCheck ? 'founder' : 'standard';
 
-  // Main card header
   let headHtml = '';
   if (founderCheck) {
     headHtml = `
@@ -2842,7 +2818,6 @@ function buildPlayerCard(user, stats, isSelf = false) {
     `;
   }
 
-  // Advanced stats
   const wpnBarAk  = totalWpnK > 0 ? (akK  / Math.max(1, kills) * 100).toFixed(1) : 0;
   const wpnBarM4  = totalWpnK > 0 ? (m4K  / Math.max(1, kills) * 100).toFixed(1) : 0;
   const wpnBarAwp = totalWpnK > 0 ? (awpK / Math.max(1, kills) * 100).toFixed(1) : 0;
@@ -2904,7 +2879,6 @@ function buildPlayerCard(user, stats, isSelf = false) {
     </div>
   `;
 
-  // Trigger bar animations after DOM is ready
   setTimeout(() => {
     ['ak', 'm4', 'awp'].forEach(wpn => {
       const bar = $(`wpn-${wpn}-bar`);
@@ -2943,7 +2917,6 @@ async function execSearch() {
     const p = res.data;
     res_el.innerHTML = buildPlayerCard(p, p, false);
   } else if (res.user) {
-    // Some APIs return res.user directly
     res_el.innerHTML = buildPlayerCard(res.user, res.user, false);
   } else {
     res_el.innerHTML = `
@@ -2986,14 +2959,12 @@ async function loadProfile() {
   const s   = res.stats || res.user;
   const privs = Array.isArray(res.privileges) ? res.privileges : [];
 
-  // Update global state
   state.user = { ...state.user, ...u };
   state.stats = s;
   state.shopBalance = Number(u.balance || 0);
 
   let html = buildPlayerCard(u, s, true);
 
-  // Verify code / Steam bind section
   if (!u.steam_id) {
     html += `
       <div class="steam-bind-card mt-16">
@@ -3010,7 +2981,6 @@ async function loadProfile() {
     `;
   }
 
-  // Privileges
   html += `<div class="sec-lbl mt-20">🏅 МОИ ПРИВИЛЕГИИ</div>`;
 
   if (privs.length > 0) {
@@ -3042,7 +3012,6 @@ async function loadProfile() {
     `;
   }
 
-  // Go-to-shop button
   html += `
     <button class="btn-secondary" onclick="navTo('shop')">🛒 ОТКРЫТЬ МАГАЗИН</button>
     <div class="credits"><div class="credits-txt" style="padding-top:16px;">Core Engine by <a href="https://t.me/coder2406" onclick="openTg('https://t.me/coder2406')">@coder2406</a></div></div>
@@ -3086,16 +3055,14 @@ async function loadTop() {
   const lblMap = { kills:'УБИЙСТВ', kd:'K/D', headshots:'ХЕДШОТОВ', skill:'РЕЙТИНГ' };
   const lbl    = lblMap[state.topFilter] || 'УБИЙСТВ';
 
-  // Sort
   const sorted = [...players].sort((a,b) => Number(b[key] || 0) - Number(a[key] || 0));
   const top3   = sorted.slice(0, 3);
   const rest   = sorted.slice(3, 100);
 
   const valFmt = (p) => isKd ? Number(p[key] || 0).toFixed(2) : fmt(p[key]);
 
-  // PODIUM
   let html = `<div class="podium">`;
-  const podiumOrder = [1, 0, 2]; // 2nd, 1st, 3rd position in DOM
+  const podiumOrder = [1, 0, 2];
   podiumOrder.forEach(idx => {
     const p = top3[idx];
     if (!p) {
@@ -3124,7 +3091,6 @@ async function loadTop() {
   });
   html += `</div>`;
 
-  // LIST
   html += `<div class="sec-lbl">ТОП СПИСОК <span class="count-badge">${sorted.length}</span></div>`;
   html += rest.map((p, i) => {
     const name    = p.nickname || p.first_name || p.username || 'Player';
@@ -3161,247 +3127,243 @@ function switchTop(filter, el) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-    CLANWAR MODULE — РЕАЛЬНАЯ ЛОГИКА (БЕЗ ЗАГЛУШЕК)
+   CLANWAR MODULE
 ═══════════════════════════════════════════════════════════════ */
 async function renderClanWar() {
-    const tournCont = $('cwsub-tournaments');
-    if (tournCont) tournCont.innerHTML = '<div class="sk sk-hero"></div><div class="sk sk-card"></div>';
+  const tournCont = $('cwsub-tournaments');
+  if (tournCont) tournCont.innerHTML = '<div class="sk sk-hero"></div><div class="sk sk-card"></div>';
 
-    const [teamRes, tournRes] = await Promise.all([
-        apiReq('/api/clanwar/my-team'),
-        apiReq('/api/clanwar/tournaments')
-    ]);
+  const [teamRes, tournRes] = await Promise.all([
+    apiReq('/api/clanwar/my-team'),
+    apiReq('/api/clanwar/tournaments')
+  ]);
 
-    if (teamRes.success) {
-        state.myTeam = teamRes.team;
-    }
+  if (teamRes.success) {
+    state.myTeam = teamRes.team;
+  }
 
-    if (tournRes.success && tournRes.data) {
-        renderTournamentsList(tournRes.data);
-    }
+  if (tournRes.success && tournRes.data) {
+    renderTournamentsList(tournRes.data);
+  }
 
-    renderMyTeam();
-    animateViewerCount();
+  renderMyTeam();
+  animateViewerCount();
 }
 
 function switchCwTab(tab) {
-    haptic('light');
-    state.cwTab = tab;
+  haptic('light');
+  state.cwTab = tab;
 
-    $qa('.cw-tab').forEach(t => t.classList.remove('active'));
-    $qa('.cw-sub').forEach(s => s.classList.remove('active'));
+  $qa('.cw-tab').forEach(t => t.classList.remove('active'));
+  $qa('.cw-sub').forEach(s => s.classList.remove('active'));
 
-    $(`cwtab-${tab}`)?.classList.add('active');
-    $(`cwsub-${tab}`)?.classList.add('active');
+  $(`cwtab-${tab}`)?.classList.add('active');
+  $(`cwsub-${tab}`)?.classList.add('active');
 
-    if (tab === 'myteam') renderMyTeam();
-    if (tab === 'live') animateViewerCount();
+  if (tab === 'myteam') renderMyTeam();
+  if (tab === 'live') animateViewerCount();
 }
 
 function renderTournamentsList(list) {
-    const cont = $('cwsub-tournaments');
-    if (!cont) return;
-    
-    if (!list || list.length === 0) {
-        cont.innerHTML = '<div class="sec-lbl">ТУРНИРЫ</div><div class="empty">Турниров пока нет</div>';
-        return;
-    }
+  const cont = $('cwsub-tournaments');
+  if (!cont) return;
 
-    let html = `<div class="sec-lbl">ПРЕДСТОЯЩИЕ ТУРНИРЫ <span class="count-badge">${list.length}</span></div>`;
-    html += list.map(t => `
-        <div class="tournament-card ${t.id === 1 ? 'featured' : ''}">
-            <div class="tourn-header">
-                <div class="tourn-type ${t.type || 'cup'}">${(t.type || 'CUP').toUpperCase()}</div>
-                <div class="tourn-status-badge">${t.status === 'upcoming' ? 'СКОРО' : 'РЕГИСТРАЦИЯ'}</div>
-            </div>
-            <div class="tourn-name">${t.name}</div>
-            <div class="tourn-meta">
-                <div class="tourn-meta-item">
-                    <div class="tourn-meta-lbl">ПРИЗОВОЙ ФОНД</div>
-                    <div class="tourn-meta-val prize-val">${fmt(t.prize_pool)} UZS</div>
-                </div>
-                <div class="tourn-meta-item">
-                    <div class="tourn-meta-lbl">ДАТА СТАРТА</div>
-                    <div class="tourn-meta-val">${new Date(t.start_date).toLocaleDateString('ru-RU', {day:'numeric', month:'short'})}</div>
-                </div>
-            </div>
-            <button class="btn-register" onclick="registerTournament('${t.name.replace(/'/g,"\\'")}')">⚔️ ЗАРЕГИСТРИРОВАТЬ КОМАНДУ</button>
+  if (!list || list.length === 0) {
+    cont.innerHTML = '<div class="sec-lbl">ТУРНИРЫ</div><div class="empty">Турниров пока нет</div>';
+    return;
+  }
+
+  let html = `<div class="sec-lbl">ПРЕДСТОЯЩИЕ ТУРНИРЫ <span class="count-badge">${list.length}</span></div>`;
+  html += list.map(t => `
+    <div class="tournament-card ${t.id === 1 ? 'featured' : ''}">
+      <div class="tourn-header">
+        <div class="tourn-type ${t.type || 'cup'}">${(t.type || 'CUP').toUpperCase()}</div>
+        <div class="tourn-status-badge">${t.status === 'upcoming' ? 'СКОРО' : 'РЕГИСТРАЦИЯ'}</div>
+      </div>
+      <div class="tourn-name">${t.name}</div>
+      <div class="tourn-meta">
+        <div class="tourn-meta-item">
+          <div class="tourn-meta-lbl">ПРИЗОВОЙ ФОНД</div>
+          <div class="tourn-meta-val prize-val">${fmt(t.prize_pool)} UZS</div>
         </div>
-    `).join('');
-    
-    cont.innerHTML = html;
+        <div class="tourn-meta-item">
+          <div class="tourn-meta-lbl">ДАТА СТАРТА</div>
+          <div class="tourn-meta-val">${new Date(t.start_date).toLocaleDateString('ru-RU', {day:'numeric', month:'short'})}</div>
+        </div>
+      </div>
+      <button class="btn-register" onclick="registerTournament('${t.name.replace(/'/g,"\\'")}')">⚔️ ЗАРЕГИСТРИРОВАТЬ КОМАНДУ</button>
+    </div>
+  `).join('');
+
+  cont.innerHTML = html;
 }
 
 function registerTournament(name) {
-    haptic('medium');
-    if (!state.myTeam) {
-        showToast(`Сначала создай команду в разделе "Команда"`, 'warn', 3500);
-        switchCwTab('myteam');
-        return;
-    }
-    showToast(`Команда "${state.myTeam.name}" зарегистрирована на ${name}!`, 'ok', 3500);
+  haptic('medium');
+  if (!state.myTeam) {
+    showToast(`Сначала создай команду в разделе "Команда"`, 'warn', 3500);
+    switchCwTab('myteam');
+    return;
+  }
+  showToast(`Команда "${state.myTeam.name}" зарегистрирована на ${name}!`, 'ok', 3500);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-    CLANWAR: MY TEAM MANAGEMENT (CREATE / JOIN / DISBAND)
-═══════════════════════════════════════════════════════════════ */
 function renderMyTeam() {
-    const cont = $('myteam-content');
-    if (!cont) return;
+  const cont = $('myteam-content');
+  if (!cont) return;
 
-    if (!state.myTeam) {
-        cont.innerHTML = `
-            <div class="sec-lbl" style="margin-top:0;">УПРАВЛЕНИЕ КОМАНДОЙ</div>
-            
-            <div class="team-create-form" style="border-color: var(--accent-mid); margin-bottom: 20px; background: rgba(0, 210, 255, 0.03);">
-                <div class="team-tag" style="margin-bottom:10px; color:var(--accent); font-weight:800;">ЕСТЬ ИНВАЙТ-КОД?</div>
-                <input type="text" id="inp-join-code" class="input-simple" placeholder="Введи код (напр. L227GM)" style="text-transform: uppercase; border-color: var(--accent-mid);">
-                <button class="btn-primary-solid" style="background:var(--accent); box-shadow:0 4px 20px var(--accent-dim);" onclick="joinTeam()">⚔️ ВСТУПИТЬ В КОМАНДУ</button>
-            </div>
+  if (!state.myTeam) {
+    cont.innerHTML = `
+      <div class="sec-lbl" style="margin-top:0;">УПРАВЛЕНИЕ КОМАНДОЙ</div>
 
-            <div class="sec-lbl">ИЛИ СОЗДАЙ СВОЮ</div>
-            <div class="team-create-form">
-                <input type="text" id="inp-team-name" class="input-simple" placeholder="Название команды (напр. ForGames.Uz)" maxlength="30">
-                <input type="text" id="inp-team-tag" class="input-simple" placeholder="Тег [макс 5 символов] напр. [FGZ]" maxlength="5">
-                <button class="btn-primary-solid" onclick="createTeam()">✨ СОЗДАТЬ КОМАНДУ В БАЗЕ</button>
-            </div>
+      <div class="team-create-form" style="border-color: var(--accent-mid); margin-bottom: 20px; background: rgba(0, 210, 255, 0.03);">
+        <div class="team-tag" style="margin-bottom:10px; color:var(--accent); font-weight:800;">ЕСТЬ ИНВАЙТ-КОД?</div>
+        <input type="text" id="inp-join-code" class="input-simple" placeholder="Введи код (напр. L227GM)" style="text-transform: uppercase; border-color: var(--accent-mid);">
+        <button class="btn-primary-solid" style="background:var(--accent); box-shadow:0 4px 20px var(--accent-dim);" onclick="joinTeam()">⚔️ ВСТУПИТЬ В КОМАНДУ</button>
+      </div>
 
-            <div class="empty">
-                <div class="empty-ico">👥</div>
-                <div class="empty-title">У тебя нет команды</div>
-                <div class="empty-sub">Вступи по коду от друга или создай свою, чтобы участвовать в турнирах.</div>
-            </div>
-        `;
-    } else {
-        const t = state.myTeam;
-        const slots = Array.from({ length: 5 }, (_, i) => {
-            const member = t.members && t.members[i];
-            if (member) {
-                return `
-                    <div class="player-slot">
-                        <div class="slot-num">${i + 1}</div>
-                        <div class="slot-avatar filled">${getInits(member.nickname || member.first_name)}</div>
-                        <div class="slot-info">
-                            <div class="slot-name">${member.nickname || member.first_name}</div>
-                            <div class="slot-role">${member.role}</div>
-                        </div>
-                        ${member.role === 'Капитан' ? '<div class="slot-captain">CAPTAIN</div>' : ''}
-                    </div>`;
-            } else {
-                return `
-                    <div class="player-slot" style="opacity: 0.6;">
-                        <div class="slot-num">${i + 1}</div>
-                        <div class="slot-avatar empty">+</div>
-                        <div class="slot-info">
-                            <div class="slot-empty-txt">Свободный слот</div>
-                        </div>
-                    </div>`;
-            }
-        }).join('');
+      <div class="sec-lbl">ИЛИ СОЗДАЙ СВОЮ</div>
+      <div class="team-create-form">
+        <input type="text" id="inp-team-name" class="input-simple" placeholder="Название команды (напр. ForGames.Uz)" maxlength="30">
+        <input type="text" id="inp-team-tag" class="input-simple" placeholder="Тег [макс 5 символов] напр. [FGZ]" maxlength="5">
+        <button class="btn-primary-solid" onclick="createTeam()">✨ СОЗДАТЬ КОМАНДУ В БАЗЕ</button>
+      </div>
 
-        cont.innerHTML = `
-            <div class="team-card">
-                <div class="team-banner">
-                    <div class="team-logo">${getInits(t.name)}</div>
-                    <div>
-                        <div class="team-name-big">${t.name}</div>
-                        <div class="team-tag">[${t.tag}] · Создана в MySQL</div>
-                    </div>
-                </div>
-                <div class="team-stats-row">
-                    <div class="team-stat-box">
-                        <div class="team-stat-lbl">МАТЧИ</div>
-                        <div class="team-stat-val">${t.matches || 0}</div>
-                    </div>
-                    <div class="team-stat-box">
-                        <div class="team-stat-lbl">ПОБЕДЫ</div>
-                        <div class="team-stat-val">${t.wins || 0}</div>
-                    </div>
-                    <div class="team-stat-box">
-                        <div class="team-stat-lbl">ВИНРЕЙТ</div>
-                        <div class="team-stat-val">${t.matches > 0 ? Math.round((t.wins/t.matches)*100) : 0}%</div>
-                    </div>
-                </div>
-                <div class="sec-lbl" style="margin-top:0;">СОСТАВ КОМАНДЫ</div>
-                <div class="player-slots">${slots}</div>
-                <div class="verify-code-display" style="margin-bottom:12px; background:var(--void3);">
-                    <div style="font-size:9px; color:var(--txt-dim); margin-bottom:4px; font-family:var(--f-head);">КОД ДЛЯ ВСТУПЛЕНИЯ:</div>
-                    <div class="verify-code-num" style="font-size:22px;">${t.invite_code}</div>
-                </div>
-                <button class="btn-invite" onclick="copyText('${t.invite_code}', 'Код приглашения скопирован!')">📋 КОПИРОВАТЬ ИНВАЙТ-КОД</button>
-                <button class="btn-secondary" onclick="disbandTeam()" style="border-color:var(--danger-mid); color:var(--danger); margin-top:8px;">🗑️ РАСФОРМИРОВАТЬ КОМАНДУ</button>
+      <div class="empty">
+        <div class="empty-ico">👥</div>
+        <div class="empty-title">У тебя нет команды</div>
+        <div class="empty-sub">Вступи по коду от друга или создай свою, чтобы участвовать в турнирах.</div>
+      </div>
+    `;
+  } else {
+    const t = state.myTeam;
+    const slots = Array.from({ length: 5 }, (_, i) => {
+      const member = t.members && t.members[i];
+      if (member) {
+        return `
+          <div class="player-slot">
+            <div class="slot-num">${i + 1}</div>
+            <div class="slot-avatar filled">${getInits(member.nickname || member.first_name)}</div>
+            <div class="slot-info">
+              <div class="slot-name">${member.nickname || member.first_name}</div>
+              <div class="slot-role">${member.role}</div>
             </div>
-        `;
-    }
+            ${member.role === 'Капитан' ? '<div class="slot-captain">CAPTAIN</div>' : ''}
+          </div>`;
+      } else {
+        return `
+          <div class="player-slot" style="opacity: 0.6;">
+            <div class="slot-num">${i + 1}</div>
+            <div class="slot-avatar empty">+</div>
+            <div class="slot-info">
+              <div class="slot-empty-txt">Свободный слот</div>
+            </div>
+          </div>`;
+      }
+    }).join('');
+
+    cont.innerHTML = `
+      <div class="team-card">
+        <div class="team-banner">
+          <div class="team-logo">${getInits(t.name)}</div>
+          <div>
+            <div class="team-name-big">${t.name}</div>
+            <div class="team-tag">[${t.tag}] · Создана в MySQL</div>
+          </div>
+        </div>
+        <div class="team-stats-row">
+          <div class="team-stat-box">
+            <div class="team-stat-lbl">МАТЧИ</div>
+            <div class="team-stat-val">${t.matches || 0}</div>
+          </div>
+          <div class="team-stat-box">
+            <div class="team-stat-lbl">ПОБЕДЫ</div>
+            <div class="team-stat-val">${t.wins || 0}</div>
+          </div>
+          <div class="team-stat-box">
+            <div class="team-stat-lbl">ВИНРЕЙТ</div>
+            <div class="team-stat-val">${t.matches > 0 ? Math.round((t.wins/t.matches)*100) : 0}%</div>
+          </div>
+        </div>
+        <div class="sec-lbl" style="margin-top:0;">СОСТАВ КОМАНДЫ</div>
+        <div class="player-slots">${slots}</div>
+        <div class="verify-code-display" style="margin-bottom:12px; background:var(--void3);">
+          <div style="font-size:9px; color:var(--txt-dim); margin-bottom:4px; font-family:var(--f-head);">КОД ДЛЯ ВСТУПЛЕНИЯ:</div>
+          <div class="verify-code-num" style="font-size:22px;">${t.invite_code}</div>
+        </div>
+        <button class="btn-invite" onclick="copyText('${t.invite_code}', 'Код приглашения скопирован!')">📋 КОПИРОВАТЬ ИНВАЙТ-КОД</button>
+        <button class="btn-secondary" onclick="disbandTeam()" style="border-color:var(--danger-mid); color:var(--danger); margin-top:8px;">🗑️ РАСФОРМИРОВАТЬ КОМАНДУ</button>
+      </div>
+    `;
+  }
 }
 
 async function createTeam() {
-    haptic('medium');
-    const name = $('inp-team-name')?.value.trim();
-    const tag  = $('inp-team-tag')?.value.trim();
+  haptic('medium');
+  const name = $('inp-team-name')?.value.trim();
+  const tag  = $('inp-team-tag')?.value.trim();
 
-    if (!name || name.length < 2) return showToast('Название слишком короткое', 'warn');
-    if (!tag || tag.length < 2) return showToast('Тег слишком короткий', 'warn');
+  if (!name || name.length < 2) return showToast('Название слишком короткое', 'warn');
+  if (!tag || tag.length < 2) return showToast('Тег слишком короткий', 'warn');
 
-    const res = await apiReq('/api/clanwar/create-team', {
-        method: 'POST',
-        body: JSON.stringify({ name, tag })
-    });
+  const res = await apiReq('/api/clanwar/create-team', {
+    method: 'POST',
+    body: JSON.stringify({ name, tag })
+  });
 
-    if (res.success) {
-        hapticNotif('success');
-        showToast(`Команда "${name}" создана! 🎉`, 'ok', 3500);
-        await renderClanWar(); 
-    } else {
-        showToast(res.error || 'Ошибка при создании', 'err');
-    }
+  if (res.success) {
+    hapticNotif('success');
+    showToast(`Команда "${name}" создана! 🎉`, 'ok', 3500);
+    await renderClanWar();
+  } else {
+    showToast(res.error || 'Ошибка при создании', 'err');
+  }
 }
 
 async function joinTeam() {
-    haptic('medium');
-    const code = $('inp-join-code')?.value.trim().toUpperCase();
-    if (!code) return showToast('Введи инвайт-код!', 'warn');
+  haptic('medium');
+  const code = $('inp-join-code')?.value.trim().toUpperCase();
+  if (!code) return showToast('Введи инвайт-код!', 'warn');
 
-    const res = await apiReq('/api/clanwar/join-team', {
-        method: 'POST',
-        body: JSON.stringify({ inviteCode: code })
-    });
+  const res = await apiReq('/api/clanwar/join-team', {
+    method: 'POST',
+    body: JSON.stringify({ inviteCode: code })
+  });
 
-    if (res.success) {
-        hapticNotif('success');
-        showToast('Ты вступил в команду! ⚔️', 'ok');
-        await renderClanWar();
-    } else {
-        showToast(res.error || 'Неверный код или нет мест', 'err');
-    }
+  if (res.success) {
+    hapticNotif('success');
+    showToast('Ты вступил в команду! ⚔️', 'ok');
+    await renderClanWar();
+  } else {
+    showToast(res.error || 'Неверный код или нет мест', 'err');
+  }
 }
 
 async function disbandTeam() {
-    haptic('heavy');
-    if (!confirm('Ты уверен? Команда и все её достижения в MySQL будут удалены!')) return;
+  haptic('heavy');
+  if (!confirm('Ты уверен? Команда и все её достижения в MySQL будут удалены!')) return;
 
-    const res = await apiReq('/api/clanwar/disband', { method: 'POST' });
-    if (res.success) {
-        state.myTeam = null; 
-        showToast('Команда удалена из базы!', 'ok');
-        renderMyTeam();
-    } else {
-        showToast(res.error || 'Только капитан может это сделать', 'err');
-    }
+  const res = await apiReq('/api/clanwar/disband', { method: 'POST' });
+  if (res.success) {
+    state.myTeam = null;
+    showToast('Команда удалена из базы!', 'ok');
+    renderMyTeam();
+  } else {
+    showToast(res.error || 'Только капитан может это сделать', 'err');
+  }
 }
 
-let viewerBase = 1200;
 function animateViewerCount() {
-    if (state.viewerTimer) clearInterval(state.viewerTimer);
-    state.viewerTimer = setInterval(() => {
-        viewerBase += Math.floor(Math.random() * 40) - 18;
-        viewerBase = Math.max(800, Math.min(2000, viewerBase));
-        const el = $('viewer-count');
-        if (el) el.textContent = fmt(viewerBase);
-    }, 4000);
+  if (state.viewerTimer) clearInterval(state.viewerTimer);
+  state.viewerTimer = setInterval(() => {
+    const el = $('viewer-count');
+    if (!el) { clearInterval(state.viewerTimer); return; }
+    const current = parseInt(el.textContent.replace(/\D/g, '')) || 1247;
+    const delta = Math.floor(Math.random() * 11) - 5;
+    el.textContent = Math.max(100, current + delta).toLocaleString('ru-RU');
+  }, 3000);
 }
 
-   
 /* ═══════════════════════════════════════════════════════════════
    ADMIN MODULE
 ═══════════════════════════════════════════════════════════════ */
@@ -3436,7 +3398,6 @@ async function execGiveBalance() {
     $('adm-sum').value = '';
     closeAdmin();
 
-    // Refresh current page
     if (state.currentPage === 'profile') loadProfile();
     if (state.currentPage === 'shop')    renderShop();
   } else {
@@ -3445,7 +3406,6 @@ async function execGiveBalance() {
   }
 }
 
-// Close modals on overlay click
 $('buy-modal')?.addEventListener('click', function(e) {
   if (e.target === this) closeBuyModal();
 });
@@ -3458,16 +3418,13 @@ $('adm-modal')?.addEventListener('click', function(e) {
 ═══════════════════════════════════════════════════════════════ */
 (async function initApp() {
   try {
-    // 1. Authenticate with backend
     await initAuth();
 
-    // 2. Show admin trigger if admin
     if (state.user && isAdmin(state.user)) {
       const admTrigger = $('adm-trigger');
       if (admTrigger) admTrigger.style.display = 'block';
     }
 
-    // 3. Check steam_id status
     const profileRes = await apiReq('/api/profile/me');
 
     if (profileRes.user) {
@@ -3475,17 +3432,14 @@ $('adm-modal')?.addEventListener('click', function(e) {
       state.stats = profileRes.stats || profileRes.user;
       state.shopBalance = Number(profileRes.user.balance || 0);
 
-      // Auth gate check
       if (!profileRes.user.steam_id && !isFounder(state.user)) {
         showAuthGate(profileRes.user.verify_code);
-        return; // Stop here — gate blocks everything
+        return;
       }
     }
 
-    // 4. Load home page
     renderHome();
 
-    // 5. Auto-refresh servers every 30s
     state.serverRefreshTimer = setInterval(() => {
       if (state.currentPage === 'home') renderHome();
     }, SERVER_REFRESH_INTERVAL);
@@ -3493,7 +3447,6 @@ $('adm-modal')?.addEventListener('click', function(e) {
   } catch(e) {
     console.error('[CRITICAL STARTUP ERROR]', e);
     showToast('Ошибка запуска. Обнови страницу.', 'err', 6000);
-    // Still render home with fallback
     renderHome();
   }
 })();
