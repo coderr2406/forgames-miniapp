@@ -570,7 +570,7 @@ function fallbackCopy(text) {
     el.style.position = 'fixed'; el.style.opacity = '0';
     document.body.appendChild(el);
     el.select();
-    try { document.execCommand('copy'); showToast('Команда скопирована! Вставь в консоль CS 1.6', 'ok'); } 
+    try { document.execCommand('copy'); showToast('Скопировано!', 'ok'); } 
     catch(e) { showToast('Ошибка копирования', 'err'); }
     document.body.removeChild(el);
 }
@@ -596,7 +596,7 @@ async function initAuth() {
     if (res.token) state.token = res.token;
 }
 
-// Global Navigation (SINGLE FUNCTION)
+// Global Navigation
 function navTo(page) {
     if (page === state.currentPage) return;
     haptic('light');
@@ -622,7 +622,6 @@ function navTo(page) {
    1. HOME MODULE (Servers & News)
 ═══════════════════════════════════════════════ */
 async function renderHome() {
-    // 1. Fetch Servers
     const sRes = await apiReq('/api/servers');
     state.serversCache = Array.isArray(sRes) ? sRes : (sRes.servers || sRes.data || []);
     
@@ -631,7 +630,6 @@ async function renderHome() {
     
     let homeHtml = '';
     
-    // Flagship Render
     if (flagship) {
         state.flagshipIpFull = `connect Forgames.uz:${flagship.port}`;
         const pl = flagship.players ?? flagship.num_players ?? 0;
@@ -662,7 +660,6 @@ async function renderHome() {
         homeHtml += `<div class="card"><div class="empty-txt">Серверы не найдены</div></div>`;
     }
 
-    // ClanWar Servers Render
     homeHtml += `<div class="sec-lbl">CLANWAR СЕРВЕРЫ</div>`;
     if (restServers.length) {
         homeHtml += restServers.map((s, i) => {
@@ -691,7 +688,6 @@ async function renderHome() {
         homeHtml += `<div class="empty-txt" style="margin-bottom:20px;">CW серверы не найдены</div>`;
     }
 
-    // 2. Fetch News
     homeHtml += `<div class="sec-lbl">НОВОСТИ ПРОЕКТА</div><div id="news-container"><div class="sk sk-list"></div></div>`;
     $('home-content').innerHTML = homeHtml;
 
@@ -735,7 +731,6 @@ function fastConnect() {
    2. SHOP MODULE
 ═══════════════════════════════════════════════ */
 async function renderShop() {
-    // Render Balance Header
     const res = await apiReq('/api/profile/me');
     state.shopBalance = res.user?.balance || 0;
     
@@ -817,6 +812,7 @@ function openTopup() {
     showToast('Напишите @coder2406 для пополнения', 'ok');
     if (tg?.openLink) tg.openLink('https://t.me/coder2406');
 }
+
 /* ═══════════════════════════════════════════════
     3. STATS & PROFILE MODULE (REAL DATA UI)
 ═══════════════════════════════════════════════ */
@@ -941,7 +937,7 @@ async function execSearch() {
     }
 }
 
-// Загрузка своего профиля
+// Загрузка своего профиля (Очищена от дубликатов)
 async function loadProfile() {
     const cont = document.getElementById('profile-content');
     cont.innerHTML = `<div class="sk sk-hero" style="height:300px;"></div><div class="sk sk-list"></div>`;
@@ -956,73 +952,47 @@ async function loadProfile() {
     const s = res.stats || {};
     const privs = res.privileges || [];
     
+    // 1. Отрисовка основной карточки Faceit
     let html = buildAdvCard(u, s, true);
 
-    // Секция привилегий
-    html += `<div class="sec-lbl">МОИ ПРИВИЛЕГИИ</div>`;
+    // 2. Секция Привилегий (Единый блок для всех)
+    html += `<div class="sec-lbl" style="margin-top:20px;">МОИ ПРИВИЛЕГИИ</div>`;
     if (privs.length > 0) {
-        privs.forEach(p => {
-            const days = Math.ceil((new Date(p.expires_at) - new Date()) / (86400000));
-            html += `
-                <div class="card priv-card">
-                    <div class="priv-ico">💎</div>
-                    <div class="priv-info">
-                        <div class="priv-name">${p.name}</div>
-                        <div class="priv-srv">${p.server_name || 'Все серверы'}</div>
+        html += privs.map(p => {
+            const days = Math.max(0, Math.ceil((new Date(p.expires_at) - Date.now()) / 86400000));
+            return `
+                <div class="priv-item">
+                    <div class="priv-ico">${p.type === 'vip' ? '⭐' : '💎'}</div>
+                    <div class="priv-txt">
+                        <div class="priv-t">${p.name}</div>
+                        <div class="priv-s">${p.server_name || 'Все серверы'}</div>
                     </div>
-                    <div class="priv-days">${days} ДНЕЙ</div>
+                    <div class="priv-d">${days} ДНЕЙ</div>
                 </div>
             `;
-        });
+        }).join('');
     } else {
-        html += `<div class="empty-inline">Нет активных привилегий</div>`;
+        html += `<div class="card"><div class="empty-txt">Нет активных привилегий</div></div>`;
     }
 
-    // Привязка Steam
+    // 3. Привязка Steam (Если не привязан)
     if (!u.steam_id && !isFounder(u)) {
         html += `
-            <div class="card" style="border-color:var(--accent-mid); margin-top:20px;">
-                <div class="sec-lbl" style="margin-top:0;">ПРИВЯЗКА STEAM</div>
-                <div class="input-group">
-                    <input type="text" id="inp-steam" class="input-base" value="${u.verify_code || '---'}" readonly>
-                    <button class="btn-secondary" onclick="copyCode('${u.verify_code}')">КОД</button>
+            <div class="card" style="border-color:var(--accent-mid); margin-top:20px; background: rgba(0,255,150,0.03);">
+                <div class="sec-lbl" style="margin-top:0; color:var(--accent);">ПРИВЯЗКА STEAM ID</div>
+                <p style="font-size:11px; color:var(--tg-hint); margin-bottom:12px;">
+                    Введите этот код на сервере командой <b style="color:#fff">/verify [код]</b>
+                </p>
+                <div class="input-group" style="margin-bottom:0;">
+                    <input type="text" id="inp-steam-code" class="input-base" value="${u.verify_code || '---'}" readonly style="text-align:center; color:var(--accent); font-weight:bold; letter-spacing:2px;">
+                    <button class="btn-search-in" onclick="fallbackCopy('${u.verify_code}')" style="position:static; margin-left:8px; height:auto; padding:0 20px;">КОПИРОВАТЬ</button>
                 </div>
             </div>
         `;
     }
 
-    // Блок Привилегий
-    if (!isFounder(u)) {
-        html += `<div class="sec-lbl">МОИ ПРИВИЛЕГИИ</div>`;
-        if (privs.length > 0) {
-            html += privs.map(p => {
-                const days = Math.ceil((new Date(p.expires_at) - Date.now()) / 86400000);
-                return `
-                    <div class="priv-item">
-                        <div class="priv-ico">${p.type === 'vip' ? '⭐' : '💎'}</div>
-                        <div class="priv-txt">
-                            <div class="priv-t">${p.name}</div>
-                            <div class="priv-s">${p.server_name || 'Все серверы'}</div>
-                        </div>
-                        <div class="priv-d">${days} ДНЕЙ</div>
-                    </div>
-                `;
-            }).join('');
-        } else {
-            html += `<div class="card"><div class="empty-txt">Нет активных привилегий</div></div>`;
-        }
-    }
-
-    html += `<div class="credits"><div class="credits-txt">Core Engine by <a href="https://t.me/coder2406">@coder2406</a></div></div>`;
-    $('profile-content').innerHTML = html;
-}
-
-async function linkSteam() {
-    const v = $('inp-steam')?.value.trim();
-    if (!v) return showToast('Введи Steam ID', 'err');
-    const d = await apiReq('/api/profile/steam', { method:'POST', body:JSON.stringify({ steam_id:v }) });
-    if (d.success) { showToast('✅ Steam привязан!', 'ok'); loadProfile(); }
-    else showToast('❌ ' + (d.error || 'Ошибка'), 'err');
+    html += `<div class="credits"><div class="credits-txt" style="margin-top:20px;">Core Engine by <a href="https://t.me/coder2406">@coder2406</a></div></div>`;
+    cont.innerHTML = html;
 }
 
 /* ═══════════════════════════════════════════════
