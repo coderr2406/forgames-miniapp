@@ -3163,22 +3163,18 @@ function switchTop(filter, el) {
     CLANWAR MODULE — РЕАЛЬНАЯ ЛОГИКА (БЕЗ ЗАГЛУШЕК)
 ═══════════════════════════════════════════════════════════════ */
 async function renderClanWar() {
-    // 1. Показываем скелетон загрузки во вкладке турниров
     const tournCont = $('cwsub-tournaments');
     if (tournCont) tournCont.innerHTML = '<div class="sk sk-hero"></div><div class="sk sk-card"></div>';
 
-    // 2. Загружаем данные о команде и список турниров параллельно из MySQL
     const [teamRes, tournRes] = await Promise.all([
         apiReq('/api/clanwar/my-team'),
         apiReq('/api/clanwar/tournaments')
     ]);
 
-    // 3. Сохраняем данные команды в стейт
     if (teamRes.success) {
         state.myTeam = teamRes.team;
     }
 
-    // 4. Если турниры успешно загружены — рендерим их (убираем заглушки)
     if (tournRes.success && tournRes.data) {
         renderTournamentsList(tournRes.data);
     }
@@ -3201,7 +3197,6 @@ function switchCwTab(tab) {
     if (tab === 'live') animateViewerCount();
 }
 
-// ФУНКЦИЯ ОТРИСОВКИ ТУРНИРОВ ИЗ БАЗЫ
 function renderTournamentsList(list) {
     const cont = $('cwsub-tournaments');
     if (!cont) return;
@@ -3243,7 +3238,6 @@ function registerTournament(name) {
         switchCwTab('myteam');
         return;
     }
-    // Здесь можно добавить реальный запрос на регистрацию в будущем
     showToast(`Команда "${state.myTeam.name}" зарегистрирована на ${name}!`, 'ok', 3500);
 }
 
@@ -3394,6 +3388,19 @@ async function disbandTeam() {
         showToast(res.error || 'Только капитан может это сделать', 'err');
     }
 }
+
+let viewerBase = 1200;
+function animateViewerCount() {
+    if (state.viewerTimer) clearInterval(state.viewerTimer);
+    state.viewerTimer = setInterval(() => {
+        viewerBase += Math.floor(Math.random() * 40) - 18;
+        viewerBase = Math.max(800, Math.min(2000, viewerBase));
+        const el = $('viewer-count');
+        if (el) el.textContent = fmt(viewerBase);
+    }, 4000);
+}
+
+   
 /* ═══════════════════════════════════════════════════════════════
    ADMIN MODULE
 ═══════════════════════════════════════════════════════════════ */
