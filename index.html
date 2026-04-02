@@ -1024,8 +1024,8 @@ async function loadTop() {
         html += `
             <div class="pod-item p${place}">
                 <div class="pod-plinth">
-                    <div class="pod-ava"><div class="pod-rank">${place === 1 ? '👑' : (place === 2 ? '🥈' : '🥉')}</div>${getInits(p.username)}</div>
-                    <div class="pod-name">${p.username}</div>
+                    <div class="pod-ava"><div class="pod-rank">${place === 1 ? '👑' : (place === 2 ? '🥈' : '🥉')}</div>${getInits(p.player.nickname || player.first_name || player.username || 'Player')}</div>
+                    <div class="pod-name">${p.player.nickname || player.first_name || player.username || 'Player'}</div>
                     <div style="font-size:9px; color:var(--txt-mut); margin-bottom:4px; text-transform:uppercase;">${p.rank || 'Новичок'}</div>
                     <div class="pod-val">${val}</div>
                 </div>
