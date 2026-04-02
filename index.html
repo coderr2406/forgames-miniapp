@@ -3350,23 +3350,17 @@ async function createTeam() {
 
 async function disbandTeam() {
     haptic('heavy');
-    if (!confirm('Ты уверен, что хочешь расформировать команду?')) return;
-    state.myTeam = null; 
-    showToast('Команда расформирована', 'warn');
-    renderMyTeam();
-}
+    if (!confirm('Ты уверен? Команда и все её достижения в MySQL будут удалены!')) return;
 
-let viewerBase = 1200;
-function animateViewerCount() {
-    if (state.viewerTimer) clearInterval(state.viewerTimer);
-    state.viewerTimer = setInterval(() => {
-        viewerBase += Math.floor(Math.random() * 40) - 18;
-        viewerBase = Math.max(800, Math.min(2000, viewerBase));
-        const el = $('viewer-count');
-        if (el) el.textContent = fmt(viewerBase);
-    }, 4000);
+    const res = await apiReq('/api/clanwar/disband', { method: 'POST' });
+    if (res.success) {
+        state.myTeam = null; 
+        showToast('Команда удалена из базы!', 'ok');
+        renderMyTeam();
+    } else {
+        showToast('Ошибка при удалении', 'err');
+    }
 }
-   
 /* ═══════════════════════════════════════════════════════════════
    ADMIN MODULE
 ═══════════════════════════════════════════════════════════════ */
