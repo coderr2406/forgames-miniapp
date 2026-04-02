@@ -949,7 +949,7 @@ async function loadProfile() {
     }
 
     const u = res.user;
-    const s = res.stats || {};
+    const s = res.stats || res.user || {};
     const privs = res.privileges || [];
     
     // 1. Отрисовка основной карточки Faceit
