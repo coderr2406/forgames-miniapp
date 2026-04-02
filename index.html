@@ -817,16 +817,16 @@ function openTopup() {
     showToast('Напишите @coder2406 для пополнения', 'ok');
     if (tg?.openLink) tg.openLink('https://t.me/coder2406');
 }
-
 /* ═══════════════════════════════════════════════
-   3. STATS & PROFILE MODULE (ADVANCED UI)
+    3. STATS & PROFILE MODULE (REAL DATA UI)
 ═══════════════════════════════════════════════ */
+
 // Универсальный генератор карточки Faceit-стиля
 function buildAdvCard(u, s, isSelf = false) {
-    const kills = Number(s.kills || s.total_kills || 0);
-    const deaths = Number(s.deaths || s.total_deaths || 0);
+    const kills = Number(s.kills || 0);
+    const deaths = Number(s.deaths || 0);
     const hs = Number(s.headshots || 0);
-    const wins = Number(s.wins || s.total_wins || 0);
+    const wins = Number(s.wins || 0);
     
     // ПРАВИЛЬНАЯ ФОРМУЛА K/D
     const kd = (kills / Math.max(1, deaths)).toFixed(2);
@@ -834,16 +834,20 @@ function buildAdvCard(u, s, isSelf = false) {
     const name = u.first_name || u.username || 'Игрок';
     const rank = s.rank || 'Новичок';
 
-    // Генерация фейковых данных для зон попаданий (Body Map) для крутости дизайна
-    const hbHead = hsPct;
-    const hbChest = Math.max(0, 45 - (hsPct/2)).toFixed(1);
-    const hbStomach = Math.max(0, 30 - (hsPct/4)).toFixed(1);
-    const hbLegs = Math.max(0, 25 - (hsPct/4)).toFixed(1);
+    // РЕАЛЬНЫЕ ДАННЫЕ ЗОН ПОПАДАНИЙ (из БД)
+    const hHead = Number(s.hits_head || 0);
+    const hChest = Number(s.hits_chest || 0);
+    const hStom = Number(s.hits_stomach || 0);
+    const hLegs = Number(s.hits_legs || 0);
+    const totalHits = hHead + hChest + hStom + hLegs;
 
-    // Генерация фейковых данных по оружию
-    const akKills = Math.round(kills * 0.42);
-    const m4Kills = Math.round(kills * 0.31);
-    const awpKills = Math.round(kills * 0.15);
+    // Функция расчета процента
+    const getPct = (val) => totalHits > 0 ? ((val / totalHits) * 100).toFixed(1) : "0.0";
+
+    // РЕАЛЬНЫЕ ДАННЫЕ ПО ОРУЖИЮ (из БД)
+    const akK = Number(s.kills_ak47 || 0);
+    const m4K = Number(s.kills_m4a1 || 0);
+    const awpK = Number(s.kills_awp || 0);
 
     const isFounderCheck = isSelf && isFounder(u);
 
@@ -894,17 +898,26 @@ function buildAdvCard(u, s, isSelf = false) {
             <div class="adv-panel">
                 <div class="adv-title"><span>ЗОНЫ ПОПАДАНИЙ</span><span>🎯</span></div>
                 <div class="hitbox-grid">
-                    <div class="hb-item"><span class="hb-head">Голова</span><span class="hb-head">${hbHead}%</span></div>
-                    <div class="hb-item"><span>Грудь</span><span>${hbChest}%</span></div>
-                    <div class="hb-item"><span>Живот</span><span>${hbStomach}%</span></div>
-                    <div class="hb-item"><span>Ноги/Руки</span><span>${hbLegs}%</span></div>
+                    <div class="hb-item"><span class="hb-head">Голова</span><span class="hb-head">${getPct(hHead)}%</span></div>
+                    <div class="hb-item"><span>Грудь</span><span>${getPct(hChest)}%</span></div>
+                    <div class="hb-item"><span>Живот</span><span>${getPct(hStom)}%</span></div>
+                    <div class="hb-item"><span>Ноги/Руки</span><span>${getPct(hLegs)}%</span></div>
                 </div>
             </div>
             <div class="adv-panel">
                 <div class="adv-title"><span>ЛЮБИМОЕ ОРУЖИЕ</span><span>🔫</span></div>
-                <div class="wpn-row"><div class="wpn-top"><span class="wpn-name">AK-47</span><span class="wpn-kills">${fmt(akKills)} kills</span></div><div class="wpn-bar-bg"><div class="wpn-bar-fill" style="width: 42%"></div></div></div>
-                <div class="wpn-row"><div class="wpn-top"><span class="wpn-name">M4A1</span><span class="wpn-kills">${fmt(m4Kills)} kills</span></div><div class="wpn-bar-bg"><div class="wpn-bar-fill" style="width: 31%"></div></div></div>
-                <div class="wpn-row"><div class="wpn-top"><span class="wpn-name">AWP</span><span class="wpn-kills">${fmt(awpKills)} kills</span></div><div class="wpn-bar-bg"><div class="wpn-bar-fill" style="width: 15%"></div></div></div>
+                <div class="wpn-row">
+                    <div class="wpn-top"><span class="wpn-name">AK-47</span><span class="wpn-kills">${fmt(akK)} kills</span></div>
+                    <div class="wpn-bar-bg"><div class="wpn-bar-fill" style="width: ${kills > 0 ? (akK/kills*100) : 0}%"></div></div>
+                </div>
+                <div class="wpn-row">
+                    <div class="wpn-top"><span class="wpn-name">M4A1</span><span class="wpn-kills">${fmt(m4K)} kills</span></div>
+                    <div class="wpn-bar-bg"><div class="wpn-bar-fill" style="width: ${kills > 0 ? (m4K/kills*100) : 0}%"></div></div>
+                </div>
+                <div class="wpn-row">
+                    <div class="wpn-top"><span class="wpn-name">AWP</span><span class="wpn-kills">${fmt(awpK)} kills</span></div>
+                    <div class="wpn-bar-bg"><div class="wpn-bar-fill" style="width: ${kills > 0 ? (awpK/kills*100) : 0}%"></div></div>
+                </div>
             </div>
         </div>
     `;
@@ -912,31 +925,30 @@ function buildAdvCard(u, s, isSelf = false) {
     return headHtml + advHtml;
 }
 
-// Stats Search Logic
+// Поиск игрока
 async function execSearch() {
     haptic('medium');
-    const q = $('inp-search').value.trim();
+    const q = document.getElementById('inp-search').value.trim();
     if (!q) return showToast('Введите ник или Steam ID', 'warn');
     
-    $('stats-result').innerHTML = `<div class="sk sk-hero" style="height:300px;"></div>`;
+    document.getElementById('stats-result').innerHTML = `<div class="sk sk-hero" style="height:300px;"></div>`;
     
-    const res = await apiReq(`/api/stats/player?q=${encodeURIComponent(q)}`);
+    const res = await apiReq(`/api/profile/player?q=${encodeURIComponent(q)}`);
     if (res.success && res.data) {
-        // Формируем mockUser для функции билдера
-        const pUser = { username: res.data.username, steam_id: res.data.steam_id };
-        $('stats-result').innerHTML = buildAdvCard(pUser, res.data, false);
+        document.getElementById('stats-result').innerHTML = buildAdvCard(res.data, res.data, false);
     } else {
-        $('stats-result').innerHTML = `<div class="empty"><div class="empty-ico">🚫</div><div class="empty-txt">Игрок не найден</div></div>`;
+        document.getElementById('stats-result').innerHTML = `<div class="empty"><div class="empty-ico">🚫</div><div class="empty-txt">Игрок не найден</div></div>`;
     }
 }
 
-// My Profile Logic
+// Загрузка своего профиля
 async function loadProfile() {
-    $('profile-content').innerHTML = `<div class="sk sk-hero" style="height:300px;"></div><div class="sk sk-list"></div>`;
+    const cont = document.getElementById('profile-content');
+    cont.innerHTML = `<div class="sk sk-hero" style="height:300px;"></div><div class="sk sk-list"></div>`;
     
     const res = await apiReq('/api/profile/me');
     if (!res.user) {
-        $('profile-content').innerHTML = `<div class="empty"><div class="empty-ico">⚠️</div><div class="empty-txt">Ошибка загрузки профиля</div></div>`;
+        cont.innerHTML = `<div class="empty"><div class="empty-ico">⚠️</div><div class="empty-txt">Ошибка загрузки</div></div>`;
         return;
     }
 
@@ -946,16 +958,35 @@ async function loadProfile() {
     
     let html = buildAdvCard(u, s, true);
 
-    // Блок привязки Steam (если нет)
+    // Секция привилегий
+    html += `<div class="sec-lbl">МОИ ПРИВИЛЕГИИ</div>`;
+    if (privs.length > 0) {
+        privs.forEach(p => {
+            const days = Math.ceil((new Date(p.expires_at) - new Date()) / (86400000));
+            html += `
+                <div class="card priv-card">
+                    <div class="priv-ico">💎</div>
+                    <div class="priv-info">
+                        <div class="priv-name">${p.name}</div>
+                        <div class="priv-srv">${p.server_name || 'Все серверы'}</div>
+                    </div>
+                    <div class="priv-days">${days} ДНЕЙ</div>
+                </div>
+            `;
+        });
+    } else {
+        html += `<div class="empty-inline">Нет активных привилегий</div>`;
+    }
+
+    // Привязка Steam
     if (!u.steam_id && !isFounder(u)) {
         html += `
-            <div class="card" style="border-color:var(--accent-mid)">
-                <div class="sec-lbl" style="margin-top:0;">ПРИВЯЗАТЬ STEAM ID</div>
-                <div class="input-group" style="margin-bottom:10px;">
-                    <span class="input-ico">🔗</span>
-                    <input type="text" id="inp-steam" class="input-base" placeholder="STEAM_0:1:12345678">
+            <div class="card" style="border-color:var(--accent-mid); margin-top:20px;">
+                <div class="sec-lbl" style="margin-top:0;">ПРИВЯЗКА STEAM</div>
+                <div class="input-group">
+                    <input type="text" id="inp-steam" class="input-base" value="${u.verify_code || '---'}" readonly>
+                    <button class="btn-secondary" onclick="copyCode('${u.verify_code}')">КОД</button>
                 </div>
-                <button class="btn-secondary" onclick="linkSteam()" style="margin-top:0; color:var(--accent); border-color:var(--accent-mid)">ПРИВЯЗАТЬ</button>
             </div>
         `;
     }
