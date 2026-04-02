@@ -1775,8 +1775,10 @@ body::after {
 
       <!-- TOURNAMENTS SUB-TAB -->
       <div class="cw-sub active" id="cwsub-tournaments">
-        <div class="sec-lbl">ПРЕДСТОЯЩИЕ ТУРНИРЫ</div>
-
+          <div class="sk sk-hero"></div>
+          <div class="sk sk-card"></div>
+      </div>
+        
         <div class="tournament-card featured">
           <div class="tourn-header">
             <div class="tourn-type cup">⚔️ CUP</div>
@@ -3245,22 +3247,34 @@ function registerTournament(name) {
     showToast(`Команда "${state.myTeam.name}" зарегистрирована на ${name}!`, 'ok', 3500);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+    CLANWAR: MY TEAM MANAGEMENT (CREATE / JOIN / DISBAND)
+═══════════════════════════════════════════════════════════════ */
 function renderMyTeam() {
     const cont = $('myteam-content');
     if (!cont) return;
 
     if (!state.myTeam) {
         cont.innerHTML = `
-            <div class="sec-lbl" style="margin-top:0;">СОЗДАТЬ КОМАНДУ</div>
+            <div class="sec-lbl" style="margin-top:0;">УПРАВЛЕНИЕ КОМАНДОЙ</div>
+            
+            <div class="team-create-form" style="border-color: var(--accent-mid); margin-bottom: 20px; background: rgba(0, 210, 255, 0.03);">
+                <div class="team-tag" style="margin-bottom:10px; color:var(--accent); font-weight:800;">ЕСТЬ ИНВАЙТ-КОД?</div>
+                <input type="text" id="inp-join-code" class="input-simple" placeholder="Введи код (напр. L227GM)" style="text-transform: uppercase; border-color: var(--accent-mid);">
+                <button class="btn-primary-solid" style="background:var(--accent); box-shadow:0 4px 20px var(--accent-dim);" onclick="joinTeam()">⚔️ ВСТУПИТЬ В КОМАНДУ</button>
+            </div>
+
+            <div class="sec-lbl">ИЛИ СОЗДАЙ СВОЮ</div>
             <div class="team-create-form">
                 <input type="text" id="inp-team-name" class="input-simple" placeholder="Название команды (напр. ForGames.Uz)" maxlength="30">
                 <input type="text" id="inp-team-tag" class="input-simple" placeholder="Тег [макс 5 символов] напр. [FGZ]" maxlength="5">
-                <button class="btn-primary-solid" onclick="createTeam()">⚔️ СОЗДАТЬ КОМАНДУ В БАЗЕ</button>
+                <button class="btn-primary-solid" onclick="createTeam()">✨ СОЗДАТЬ КОМАНДУ В БАЗЕ</button>
             </div>
+
             <div class="empty">
                 <div class="empty-ico">👥</div>
                 <div class="empty-title">У тебя нет команды</div>
-                <div class="empty-sub">Создай свою команду, приглашай друзей по коду и участвуй в турнирах ClanWar.</div>
+                <div class="empty-sub">Вступи по коду от друга или создай свою, чтобы участвовать в турнирах.</div>
             </div>
         `;
     } else {
@@ -3348,6 +3362,25 @@ async function createTeam() {
     }
 }
 
+async function joinTeam() {
+    haptic('medium');
+    const code = $('inp-join-code')?.value.trim().toUpperCase();
+    if (!code) return showToast('Введи инвайт-код!', 'warn');
+
+    const res = await apiReq('/api/clanwar/join-team', {
+        method: 'POST',
+        body: JSON.stringify({ inviteCode: code })
+    });
+
+    if (res.success) {
+        hapticNotif('success');
+        showToast('Ты вступил в команду! ⚔️', 'ok');
+        await renderClanWar();
+    } else {
+        showToast(res.error || 'Неверный код или нет мест', 'err');
+    }
+}
+
 async function disbandTeam() {
     haptic('heavy');
     if (!confirm('Ты уверен? Команда и все её достижения в MySQL будут удалены!')) return;
@@ -3358,7 +3391,7 @@ async function disbandTeam() {
         showToast('Команда удалена из базы!', 'ok');
         renderMyTeam();
     } else {
-        showToast('Ошибка при удалении', 'err');
+        showToast(res.error || 'Только капитан может это сделать', 'err');
     }
 }
 /* ═══════════════════════════════════════════════════════════════
