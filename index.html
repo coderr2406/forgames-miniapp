@@ -1010,7 +1010,6 @@ async function loadTop() {
     const key = keyMap[state.topFilter] || 'kills';
     const lbl = { kills: 'УБИЙСТВ', kd: 'K/D RATIO', headshots: 'ХЕДШОТОВ', wins: 'ПОБЕД' }[state.topFilter];
     const isKd = key === 'kd';
-
     const sorted = [...players].sort((a,b) => Number(b[key] || 0) - Number(a[key] || 0));
     const top3 = sorted.slice(0, 3);
     const rest = sorted.slice(3);
@@ -1021,11 +1020,12 @@ async function loadTop() {
         if(!p) return;
         const place = idx + 1;
         const val = isKd ? Number(p[key] || 0).toFixed(2) : fmt(p[key]);
+        const name = p.nickname || p.first_name || p.username || 'Player';
         html += `
             <div class="pod-item p${place}">
                 <div class="pod-plinth">
-                    <div class="pod-ava"><div class="pod-rank">${place === 1 ? '👑' : (place === 2 ? '🥈' : '🥉')}</div>${getInits(p.player.nickname || player.first_name || player.username || 'Player')}</div>
-                    <div class="pod-name">${p.player.nickname || player.first_name || player.username || 'Player'}</div>
+                    <div class="pod-ava"><div class="pod-rank">${place === 1 ? '👑' : (place === 2 ? '🥈' : '🥉')}</div>${getInits(name)}</div>
+                    <div class="pod-name">${name}</div>
                     <div style="font-size:9px; color:var(--txt-mut); margin-bottom:4px; text-transform:uppercase;">${p.rank || 'Новичок'}</div>
                     <div class="pod-val">${val}</div>
                 </div>
@@ -1033,12 +1033,14 @@ async function loadTop() {
     });
     html += `</div><div class="sec-lbl">ТОП ИГРОКОВ</div>`;
     
-    html += rest.map((p, i) => `
+    html += rest.map((p, i) => {
+        const name = p.nickname || p.first_name || p.username || 'Player';
+        return `
         <div class="top-list-item">
             <div class="tl-num">${i + 4}</div>
-            <div class="tl-ava">${getInits(p.username)}</div>
+            <div class="tl-ava">${getInits(name)}</div>
             <div class="tl-info">
-                <div class="tl-name">${p.username} <span style="font-size:9px; color:var(--gold); margin-left:4px;">[${p.rank || 'Новичок'}]</span></div>
+                <div class="tl-name">${name} <span style="font-size:9px; color:var(--gold); margin-left:4px;">[${p.rank || 'Новичок'}]</span></div>
                 <div class="tl-sub">${p.steam_id || 'Не привязан'}</div>
             </div>
             <div class="tl-val-box">
@@ -1046,11 +1048,10 @@ async function loadTop() {
                 <div class="tl-lbl">${lbl}</div>
             </div>
         </div>
-    `).join('');
+    `}).join('');
     
     $('top-content').innerHTML = html;
 }
-
 function switchTop(filter, el) {
     haptic('light');
     state.topFilter = filter;
