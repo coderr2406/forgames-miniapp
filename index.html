@@ -1671,40 +1671,44 @@ body::after {
   <div class="gate-logo">FOR<span>GAMES</span>.UZ</div>
   <div class="gate-icon">🎮</div>
   <div class="gate-title">Привяжи аккаунт</div>
-  <div class="gate-code-wrap">
-    <div class="gate-code-lbl">ТВОЙ ЛИЧНЫЙ КОД</div>
-    <div class="gate-code" id="gate-code-display">------</div>
-    <div style="margin-top:18px; display:flex; flex-direction:column; gap:10px; text-align:left;">
-      <div style="background:var(--void3); border:1px solid var(--border-light); border-radius:var(--r-sm); padding:12px 14px;">
-        <div style="font-family:var(--f-head); font-size:8px; color:var(--txt-dim); letter-spacing:1.5px; margin-bottom:8px;">СПОСОБ 1 — КОНСОЛЬ (~)</div>
-        <div class="gate-cmd" id="gate-code-cmd" style="margin:0;">say /login ------</div>
-      </div>
-      <div style="background:var(--void3); border:1px solid var(--border-light); border-radius:var(--r-sm); padding:12px 14px;">
-        <div style="font-family:var(--f-head); font-size:8px; color:var(--txt-dim); letter-spacing:1.5px; margin-bottom:8px;">СПОСОБ 2 — ЧАТ (Y)</div>
-        <div class="gate-cmd" style="margin:0; border-color:var(--accent-mid); color:var(--accent);">/login ------</div>
+
+  <div class="gate-code-wrap" style="max-width:340px;">
+    <div class="gate-code-lbl">ШАГ 1 — ЗАЙДИ НА ЛЮБОЙ СЕРВЕР</div>
+    <div style="margin-bottom:16px; text-align:left;">
+      <div style="display:flex; flex-direction:column; gap:6px; font-family:var(--f-mono); font-size:11px;">
+        <div style="display:flex; justify-content:space-between; padding:7px 12px; background:var(--void3); border:1px solid var(--border-light); border-radius:var(--r-xs);">
+          <span style="color:var(--txt-dim);">ClanWar #1</span><span style="color:var(--accent);">94.158.53.123:27014</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:7px 12px; background:var(--void3); border:1px solid var(--border-light); border-radius:var(--r-xs);">
+          <span style="color:var(--txt-dim);">ClanWar #2</span><span style="color:var(--accent);">94.158.53.123:27015</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:7px 12px; background:var(--void3); border:1px solid var(--border-light); border-radius:var(--r-xs);">
+          <span style="color:var(--txt-dim);">ClanWar #3</span><span style="color:var(--accent);">94.158.53.123:27016</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:7px 12px; background:var(--void3); border:1px solid var(--border-light); border-radius:var(--r-xs);">
+          <span style="color:var(--txt-dim);">ClanWar #4</span><span style="color:var(--accent);">94.158.53.123:27017</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:7px 12px; background:var(--void3); border:1px solid var(--border-light); border-radius:var(--r-xs);">
+          <span style="color:var(--txt-dim);">Andijon CW</span><span style="color:var(--accent);">94.158.53.123:27013</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:7px 12px; background:var(--void3); border:1px solid var(--border-light); border-radius:var(--r-xs);">
+          <span style="color:var(--txt-dim);">Swap CW</span><span style="color:var(--accent);">94.158.53.123:27012</span>
+        </div>
       </div>
     </div>
-    <div style="margin-top:16px; font-family:var(--f-mono); font-size:10px; color:var(--txt-dim); text-align:left; line-height:2.2;">
-      <div style="color:var(--txt-mut); font-family:var(--f-head); font-size:8px; letter-spacing:1px; margin-bottom:6px;">ЗАЙДИ НА ЛЮБОЙ СЕРВЕР:</div>
-      <div><span style="color:var(--txt-dim);">ClanWar #1 · </span><span style="color:var(--accent);">94.158.53.123:27014</span></div>
-      <div><span style="color:var(--txt-dim);">ClanWar #2 · </span><span style="color:var(--accent);">94.158.53.123:27015</span></div>
-      <div><span style="color:var(--txt-dim);">ClanWar #3 · </span><span style="color:var(--accent);">94.158.53.123:27016</span></div>
-      <div><span style="color:var(--txt-dim);">ClanWar #4 · </span><span style="color:var(--accent);">94.158.53.123:27017</span></div>
-      <div><span style="color:var(--txt-dim);">Andijon CW · </span><span style="color:var(--accent);">94.158.53.123:27013</span></div>
-      <div><span style="color:var(--txt-dim);">Swap CW    · </span><span style="color:var(--accent);">94.158.53.123:27012</span></div>
-    </div>
+
+    <div class="gate-code-lbl">ШАГ 2 — ОТКРОЙ КОНСОЛЬ (~) И ВВЕДИ</div>
+    <div class="gate-code" id="gate-code-display" style="font-size:32px; letter-spacing:6px; margin-bottom:10px;">------</div>
+    <div style="font-family:var(--f-mono); font-size:10px; color:var(--txt-dim); margin-bottom:8px;">Скопируй команду ниже и вставь в консоль:</div>
+    <div class="gate-cmd" id="gate-code-cmd">say /login ------</div>
   </div>
-  <div class="gate-code-wrap">
-    <div class="gate-code-lbl">ТВОЙ ЛИЧНЫЙ КОД</div>
-    <div class="gate-code" id="gate-code-display">------</div>
-    <div class="gate-cmd" id="gate-code-cmd">/login ------</div>
-  </div>
+
   <div class="gate-status">
     <div class="gate-status-dot"></div>
     <span id="gate-status-txt">Ожидаем подключение...</span>
   </div>
 </div>
-
+   
 <!-- ══════════════════════════════════════════════
      MAIN APP
 ══════════════════════════════════════════════ -->
