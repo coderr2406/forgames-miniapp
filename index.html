@@ -2303,7 +2303,7 @@ function showAuthGate(verifyCode) {
   const cmdEl = $('gate-code-cmd');
 
   codeEl.textContent = verifyCode || '------';
-  cmdEl.textContent = `/login ${verifyCode || '------'}`;
+  cmdEl.textContent = `say /login ${verifyCode || '------'}`;
 
   gate.classList.add('visible');
 
