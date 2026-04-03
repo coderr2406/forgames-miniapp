@@ -2510,7 +2510,7 @@ async function renderHome() {
 
 function fastConnect() {
   haptic('heavy');
-  copyText(state.connectCmd, '📋 Команда скопирована! Вставь в консоль CS 1.6');
+  copyText(state.connectCmd, '📋 Команда скопирована! Вставь в чат CS 1.6');
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -2968,9 +2968,9 @@ async function loadProfile() {
   if (!u.steam_id) {
     html += `
       <div class="steam-bind-card mt-16">
-        <div class="sec-lbl" style="margin-top:0; color:var(--accent);">🔗 ПРИВЯЗКА STEAM</div>
+        <div class="sec-lbl" style="margin-top:0; color:var(--accent);">🔗 ПРИВЯЗКА STEAM / NON STEAM </div>
         <p style="font-size:13px; color:var(--txt-mut); line-height:1.6; margin-bottom:14px;">
-          Зайди на сервер <b style="color:#fff">Forgames.uz:27014</b> и введи в консоли:
+          Зайди на сервер <b style="color:#fff">Forgames.uz:27012</b> и введи в чат:
         </p>
         <div class="verify-code-display">
           <div class="verify-code-num">${u.verify_code || '------'}</div>
